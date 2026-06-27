@@ -1,0 +1,2947 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quadro de Produção 2026</title>
+<style>
+  :root{
+    --verde:#2e7d32;        --verde-claro:#e8f5e9;  --verde-borda:#a5d6a7;
+    --azul:#1565c0;         --azul-claro:#e3f2fd;   --azul-borda:#90caf9;
+    --st-verde:#c8e6c9;     --st-amarelo:#fff59d;
+    --cinza:#f4f5f7;        --texto:#1f2933;        --borda:#d7dce1;
+    --sombra:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.08);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;color:var(--texto);background:var(--cinza);font-size:14px}
+  header.app{background:#fff;border-bottom:1px solid var(--borda);padding:10px 16px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:20;box-shadow:var(--sombra)}
+  header.app h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.2px}
+  header.app .logo{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--verde),var(--azul));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800}
+  nav.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+  nav.tabs button{border:1px solid transparent;background:transparent;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:#52606d}
+  nav.tabs button:hover{background:var(--cinza)}
+  nav.tabs button.active{color:#fff}
+  nav.tabs button.active[data-turno="A"]{background:var(--verde)}
+  nav.tabs button.active[data-turno="B"]{background:var(--azul)}
+  nav.tabs button.active[data-turno="N"]{background:#37474f}
+  main{padding:16px;max-width:1280px;margin:0 auto}
+  .view{display:none}
+  .view.active{display:block}
+
+  .turno-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;padding:14px 18px;border-radius:12px;color:#fff}
+  .turno-head.A{background:linear-gradient(135deg,var(--verde),#43a047)}
+  .turno-head.B{background:linear-gradient(135deg,var(--azul),#1e88e5)}
+  .turno-head h2{margin:0;font-size:18px}
+  .turno-head .sub{opacity:.9;font-size:12px}
+  .turno-head .total{margin-left:auto;text-align:right}
+  .turno-head .total .n{font-size:30px;font-weight:800;line-height:1}
+  .turno-head .total .l{font-size:11px;text-transform:uppercase;letter-spacing:.5px;opacity:.9}
+
+  .card{background:#fff;border:1px solid var(--borda);border-radius:12px;box-shadow:var(--sombra);overflow:hidden}
+  .table-wrap{overflow-x:auto}
+  table.lanc{border-collapse:collapse;width:100%;min-width:980px;font-size:13px}
+  table.lanc th{background:#fafbfc;border-bottom:2px solid var(--borda);padding:9px 8px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:#52606d;white-space:nowrap}
+  table.lanc td{border-bottom:1px solid #eef1f4;padding:4px 6px;vertical-align:middle}
+  table.lanc tr:hover td{background:#fcfdff}
+  table.lanc input,table.lanc select{width:100%;border:1px solid transparent;background:transparent;padding:6px 6px;border-radius:6px;font-size:13px;font-family:inherit;color:inherit}
+  table.lanc input:hover,table.lanc select:hover{border-color:var(--borda)}
+  table.lanc input:focus,table.lanc select:focus{outline:none;border-color:var(--azul);background:#fff;box-shadow:0 0 0 2px var(--azul-borda)}
+  td.calc{font-variant-numeric:tabular-nums;font-weight:600;color:#3e4c59;white-space:nowrap}
+  td.calc .wait{color:#9aa5b1;font-weight:400;font-style:italic}
+  td.num input{text-align:right;font-variant-numeric:tabular-nums}
+  td.realizado{font-weight:800;color:var(--verde)}
+  td.realizado.ok{color:#1b5e20}
+  td.realizado.abaixo{color:#8a6d00;background:#fff8e1}
+  td.realizado.erro{color:#fff;background:#e12d39;border-radius:6px}
+  /* destaque da LINHA inteira quando falta motivo (âmbar) ou produção inválida (vermelho) */
+  table.lanc tr.linha-falta-motivo td{background:#fff8e1}
+  table.lanc tr.linha-falta-motivo td:first-child{box-shadow:inset 4px 0 0 #f9a825}
+  table.lanc tr.linha-invalida td{background:#fdecee}
+  table.lanc tr.linha-invalida td:first-child{box-shadow:inset 4px 0 0 #e12d39}
+  .motivo-aviso{display:block;font-size:11px;font-weight:700;color:#b06a00;margin-top:3px;line-height:1.25}
+  .col-acao{text-align:center;white-space:nowrap;padding-left:6px;padding-right:6px}
+  .btn-del{border:none;background:transparent;color:#cbd2d9;cursor:pointer;font-size:16px;line-height:1;padding:4px;border-radius:6px}
+  .btn-del:hover{color:#e12d39;background:#fdecee}
+  .btn-prox{border:1px solid var(--verde);background:var(--verde-claro);color:#1b5e20;border-radius:6px;padding:4px 10px;cursor:pointer;font-weight:700;font-size:11px;white-space:nowrap}
+  .btn-prox:hover{background:#c8e6c9}
+  .btn-prox.bloq{opacity:.5;border-style:dashed;cursor:not-allowed}
+  .btn-prox.bloq:hover{background:var(--verde-claro)}
+  .ocor-wrap{display:flex;flex-direction:column;gap:4px}
+  .ocor-wrap .sub-ctl{font-size:12px}
+
+  /* F33 - tela estreita (tablet/celular): tabela de lançamento vira cartões empilhados */
+  @media(max-width:820px){
+    table.lanc{min-width:0}
+    table.lanc thead{display:none}
+    table.lanc tbody,table.lanc tr,table.lanc td{display:block;width:100%}
+    table.lanc tr{border:1px solid var(--borda);border-radius:10px;margin-bottom:10px;padding:4px 8px;background:#fff}
+    table.lanc tr.row-nova{background:#f1f8e9}
+    table.lanc td{border-bottom:1px solid #f0f2f5;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 4px}
+    table.lanc td:last-child{border-bottom:none}
+    table.lanc td::before{content:attr(data-label);font-size:11px;font-weight:700;text-transform:uppercase;color:#52606d;flex:none}
+    table.lanc td.col-acao::before{content:""}
+    table.lanc input,table.lanc select{width:auto;flex:1;text-align:right;min-height:42px;font-size:15px}
+    table.lanc td.calc{font-size:15px}
+  }
+
+  .toolbar{display:flex;gap:8px;align-items:center;padding:10px 12px;flex-wrap:wrap}
+  button.btn{border:1px solid var(--borda);background:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;color:var(--texto)}
+  button.btn:hover{background:var(--cinza)}
+  button.btn.primary{background:var(--verde);color:#fff;border-color:var(--verde)}
+  button.btn.primary.B{background:var(--azul);border-color:var(--azul)}
+  button.btn.danger{color:#e12d39;border-color:#f7c5c9}
+  button.btn.danger:hover{background:#fdecee}
+
+  /* RESUMO */
+  .resumo-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:900px){.resumo-grid{grid-template-columns:1fr}}
+  .resumo-col h3{margin:0 0 10px;font-size:15px;display:flex;align-items:center;gap:8px}
+  .dot{width:12px;height:12px;border-radius:50%}
+  .dot.A{background:var(--verde)} .dot.B{background:var(--azul)}
+  table.resumo{border-collapse:collapse;width:100%;font-size:12.5px}
+  table.resumo th{padding:8px 8px;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid var(--borda)}
+  table.resumo td{padding:7px 8px;border-bottom:1px solid #eef1f4;font-variant-numeric:tabular-nums}
+  .resumo-col.A table.resumo th{background:var(--verde-claro);color:#1b5e20}
+  .resumo-col.B table.resumo th{background:var(--azul-claro);color:#0d47a1}
+  .resumo-col.A table.resumo tbody tr{background:#f4fbf5}
+  .resumo-col.B table.resumo tbody tr{background:#f3f9ff}
+  td.status{font-weight:800;border-radius:4px;white-space:nowrap;text-align:center}
+  td.status.st-acima{background:var(--st-verde);color:#1b5e20}
+  td.status.st-abaixo{background:var(--st-amarelo);color:#7a5b00}
+  td.ocor{font-size:11px;color:#52606d;max-width:230px;line-height:1.5}
+  tr.tot-row td{font-weight:800;border-top:2px solid var(--borda);background:#fff !important}
+  .empty{padding:24px;text-align:center;color:#9aa5b1;font-style:italic}
+
+  /* DASHBOARD */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+  .kpi{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:16px;box-shadow:var(--sombra);position:relative;overflow:hidden}
+  .kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px}
+  .kpi.A::before{background:var(--verde)} .kpi.B::before{background:var(--azul)} .kpi.G::before{background:linear-gradient(var(--verde),var(--azul))} .kpi.N::before{background:#607d8b}
+  .kpi .l{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#7b8794;font-weight:600}
+  .kpi .v{font-size:30px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums}
+  .kpi .u{font-size:12px;color:#9aa5b1;font-weight:600}
+  .chart-card{background:#fff;border:1px solid var(--borda);border-radius:12px;box-shadow:var(--sombra);padding:18px}
+  .chart-card h3{margin:0 0 4px;font-size:16px}
+  .chart-card .legend{display:flex;gap:16px;font-size:12px;color:#52606d;margin-bottom:14px}
+  .legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  .bar-row{display:grid;grid-template-columns:170px 1fr 70px;align-items:center;gap:10px;margin-bottom:9px}
+  .bar-row .name{font-size:12.5px;text-align:right;color:#3e4c59;font-weight:600}
+  .bar-track{background:#f0f2f5;border-radius:6px;height:22px;display:flex;overflow:hidden}
+  .bar-seg{height:100%;transition:width .6s ease-out}
+  .bar-seg.A{background:var(--verde)} .bar-seg.B{background:var(--azul)}
+  .bar-row .val{font-weight:800;font-variant-numeric:tabular-nums;font-size:13px}
+
+  /* KPIs em trios A/B/A+B (item 2) */
+  .kpi-trios{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:20px}
+  .kpi-trio{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:10px}
+  .kpi-trio .kpi.A{grid-column:1;grid-row:1}
+  .kpi-trio .kpi.B{grid-column:1;grid-row:2}
+  .kpi-trio .kpi.G{grid-column:2;grid-row:1 / span 2;display:flex;flex-direction:column;justify-content:center}
+  .kpi.kpi-sm{padding:12px 14px}
+  .kpi.kpi-sm .v{font-size:22px;margin-top:2px}
+  .kpi.kpi-sm .l{font-size:10px}
+  .kpi-trio .kpi.G .v{font-size:40px}
+  .kpi-trio .kpi.G .l{font-size:12px}
+
+  /* filtro de período (item 1) */
+  .dash-filtro{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;background:#fff;border:1px solid var(--borda);border-radius:10px;padding:10px 12px;box-shadow:var(--sombra)}
+  .dash-filtro .df-lbl{font-weight:700;color:#52606d;font-size:13px}
+  .dash-filtro input[type=date]{padding:7px 9px;border:1px solid var(--borda);border-radius:8px;font-family:inherit;font-size:13px}
+
+  /* ocorrências: A e B em barras próprias, coladas (item 4) */
+  .ocor-row{display:grid;grid-template-columns:180px 1fr 84px;align-items:center;gap:10px;margin-bottom:10px}
+  .ocor-row .name{font-size:12.5px;text-align:right;color:#3e4c59;font-weight:600}
+  .ocor-bars{display:flex;flex-direction:column;gap:2px}
+  .ob-track{background:#f0f2f5;border-radius:4px;height:11px;overflow:hidden}
+  .ob-track .bar-seg{border-radius:4px}
+  .ocor-row .val{font-weight:800;font-variant-numeric:tabular-nums;font-size:13px}
+
+  /* animação de entrada do Dashboard (item 5) */
+  @keyframes kpiIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .kpi.anim{animation:kpiIn .45s ease-out both}
+  @media(prefers-reduced-motion:reduce){ .kpi.anim{animation:none} .bar-seg{transition:none} }
+
+  /* CONFIG */
+  .cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.cfg-grid{grid-template-columns:1fr}}
+  .panel{background:#fff;border:1px solid var(--borda);border-radius:12px;box-shadow:var(--sombra);padding:18px}
+  .panel h3{margin:0 0 4px;font-size:15px}
+  .panel p.hint{margin:0 0 14px;color:#7b8794;font-size:12px}
+  .field{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .field label{font-weight:600;min-width:120px}
+  .field input{padding:9px 10px;border:1px solid var(--borda);border-radius:8px;font-size:14px;font-family:inherit;width:120px}
+  .cat-list{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto}
+  .cat-list li{display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px solid #eef1f4}
+  .cat-list li span{flex:1}
+  .cat-list li label.cat-desc{display:flex;align-items:center;gap:3px;flex:none;font-size:9px;font-weight:700;text-transform:uppercase;color:#7b8794;cursor:pointer;white-space:nowrap}
+  .cat-add{display:flex;gap:8px;margin-top:12px}
+  .cat-add input{flex:1;padding:9px 10px;border:1px solid var(--borda);border-radius:8px;font-size:14px;font-family:inherit}
+  .save-flash{font-size:12px;color:var(--verde);font-weight:600;opacity:0;transition:opacity .3s}
+  .save-flash.show{opacity:1}
+
+  /* subbar concluir o dia */
+  .subbar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--borda);flex-wrap:wrap;background:#fafbfc}
+  .subbar label{font-weight:600}
+  .subbar input[type=date]{padding:7px 9px;border:1px solid var(--borda);border-radius:8px;font-family:inherit;font-size:13px}
+  .subbar .spacer{margin-left:auto}
+  .subbar .dia-status{font-size:12px;color:#7b8794;font-weight:600}
+  button.btn.ghost{background:transparent;border-color:transparent;color:#7b8794}
+  button.btn.ghost:hover{background:var(--cinza);color:var(--texto)}
+  button.btn.ok{background:#1b8a3a;color:#fff;border-color:#1b8a3a}
+  button.btn.ok.B{background:var(--azul);border-color:var(--azul)}
+  .badge-ok{display:inline-block;font-size:10px;font-weight:700;color:#1b5e20;background:var(--st-verde);border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:1px}
+  .cfg-note{font-size:12px;color:#52606d;font-weight:600}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#243b53;color:#fff;padding:12px 18px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:90vw;text-align:center}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ----- usuário logado (header) ----- */
+  .userbox{display:flex;align-items:center;gap:8px;font-size:12px;color:#52606d}
+  .userbox .who{font-weight:700;color:var(--texto)}
+  .userbox .perfil{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:2px 8px;border-radius:999px;background:#eceff1;color:#37474f}
+  .userbox .perfil.ADM{background:#fff3e0;color:#e65100}
+  .userbox .perfil.SUPORTE{background:#ede7f6;color:#4527a0}
+  .userbox .perfil.USUARIO{background:#e8f5e9;color:#1b5e20}
+  .userbox .perfil.LOCAL{background:#eceff1;color:#607d8b}
+  .userbox button{border:1px solid var(--borda);background:#fff;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:600;color:#52606d}
+  .userbox button:hover{background:var(--cinza)}
+
+  /* ----- linhas travadas (read-only) ----- */
+  table.lanc input:disabled,table.lanc select:disabled{background:transparent;color:#3e4c59;cursor:not-allowed;border-color:transparent !important;box-shadow:none !important;opacity:1}
+  table.lanc tr.travada td{background:#fbfcfd}
+  .cadeado{color:#9aa5b1;font-size:12px}
+
+  /* ----- overlay de login ----- */
+  #login{position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#1b5e20,#0d47a1);display:flex;align-items:center;justify-content:center;padding:16px}
+  #login.hidden{display:none}
+  .login-card{background:#fff;border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.35);width:100%;max-width:380px;padding:30px 28px;text-align:center}
+  .login-card .logo{width:54px;height:54px;border-radius:13px;background:linear-gradient(135deg,var(--verde),var(--azul));color:#fff;font-weight:800;font-size:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  .login-card h2{margin:0 0 2px;font-size:19px}
+  .login-card p.sub{margin:0 0 20px;color:#7b8794;font-size:12.5px}
+  .login-card input[type=password]{width:100%;padding:12px 14px;border:1px solid var(--borda);border-radius:10px;font-size:15px;font-family:inherit;text-align:center;letter-spacing:1px}
+  .login-card input[type=password]:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px var(--azul-borda)}
+  .login-card button.entrar{width:100%;margin-top:12px;padding:12px;border:none;border-radius:10px;background:var(--verde);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+  .login-card button.entrar:hover{background:#256528}
+  .login-erro{color:#e12d39;font-size:12.5px;font-weight:600;margin-top:12px;min-height:16px}
+  .login-offline{margin-top:16px;font-size:12px}
+  .login-offline a{color:#7b8794;cursor:pointer;text-decoration:underline}
+  .login-foot{margin-top:18px;font-size:10.5px;color:#b0b8c1;line-height:1.5}
+  .login-tipos{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .tipo-btn{padding:11px;border:1.5px solid var(--borda);border-radius:10px;background:#fff;font-weight:700;font-size:14px;cursor:pointer;color:#52606d}
+  .tipo-btn:hover{border-color:var(--azul)}
+  .tipo-btn.sel{border-color:var(--verde);background:var(--verde-claro);color:#1b5e20}
+  .login-turnos{display:flex;gap:8px;margin-bottom:10px}
+  .turno-btn{flex:1;padding:10px;border:1.5px solid var(--borda);border-radius:10px;background:#fff;font-weight:700;cursor:pointer;color:#52606d}
+  .turno-btn.sel[data-turno="A"]{border-color:var(--verde);background:var(--verde-claro);color:#1b5e20}
+  .turno-btn.sel[data-turno="B"]{border-color:var(--azul);background:var(--azul-claro);color:#0d47a1}
+
+  /* ----- barra/indicador de conexão e sincronização ----- */
+  #offlineBar{display:none;background:#c62828;color:#fff;text-align:center;padding:9px 12px;font-size:13px;font-weight:700}
+  #offlineBar.amarelo{background:#f9a825;color:#3a2d00}
+  body.offline header.app{background:#fff5f5;border-bottom-color:#ffcdd2}
+  body.offline header.app .logo{filter:grayscale(.35)}
+  .syncind{display:flex;align-items:center;gap:6px;font-size:11px;color:#7b8794;white-space:nowrap}
+  .syncind .sdot{width:8px;height:8px;border-radius:50%;background:#43a047;flex:none}
+  body.offline .syncind .sdot{background:#c62828}
+  .syncind.pend .sdot{background:#f9a825}
+  .row-nova td{background:#f1f8e9}
+  #btnImportarRecente{border:1px solid #f9a825;background:#fff8e1;color:#8a6d00;border-radius:7px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700;box-shadow:0 0 0 3px rgba(249,168,37,.18)}
+  #btnImportarRecente:hover{background:#ffecb3}
+  #simBadge{display:none;background:#ffe0b2;color:#8a4b00;border:1px solid #ffb74d;border-radius:999px;padding:3px 12px;font-size:11px;font-weight:800;letter-spacing:.5px;white-space:nowrap}
+
+  /* ----- modal de senha (mascarada) p/ iniciar/concluir ----- */
+  #senhaModal{position:fixed;inset:0;z-index:110;background:rgba(15,30,50,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+  #senhaModal.hidden{display:none}
+  .senha-card{background:#fff;border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.3);width:100%;max-width:340px;padding:22px}
+  .senha-card h3{margin:0 0 14px;font-size:16px}
+  .senha-card input{width:100%;padding:11px 12px;border:1px solid var(--borda);border-radius:9px;font-size:15px;font-family:inherit;text-align:center;letter-spacing:2px}
+  .senha-card input:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px var(--azul-borda)}
+  .senha-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+
+  /* ----- modal de CHAMADA (rodada 12): início e fim, centralizado e alinhado ----- */
+  #funcModal{position:fixed;inset:0;z-index:115;background:rgba(15,30,50,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+  #funcModal.hidden{display:none}
+  #funcModal .senha-card{max-width:470px;width:100%;text-align:left;max-height:90vh;display:flex;flex-direction:column}
+  #funcModal h3{margin:0 0 4px;font-size:16px}
+  #funcModalLista{margin-top:4px;overflow:auto;flex:1 1 auto;-webkit-overflow-scrolling:touch}
+  .chamada-row{border-bottom:1px solid #eef1f4}
+  .chamada-item{display:flex;align-items:center;gap:10px;padding:10px 4px;cursor:pointer;min-height:44px}
+  .chamada-item input[type=checkbox]{width:20px;height:20px;flex:none;accent-color:var(--verde)}
+  .chamada-item span{flex:1;font-weight:600}
+  .chamada-tag{font-style:normal;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#7b8794;background:#eceff1;border-radius:999px;padding:2px 8px;flex:none;white-space:nowrap}
+  .chamada-hora{display:flex;align-items:center;gap:8px;padding:0 4px 10px 36px}
+  .chamada-hora .chamada-hlbl{font-size:12px;font-weight:700;color:#b06a00}
+  .chamada-hora input[type=time]{padding:8px 9px;border:1px solid var(--borda);border-radius:8px;font-family:inherit;font-size:14px}
+  #funcModalAdd{margin-top:10px}
+  .badge-sim{display:inline-block;font-size:10px;font-weight:700;color:#8a4b00;background:#ffe0b2;border:1px solid #ffb74d;border-radius:999px;padding:0 7px;margin-left:6px;vertical-align:1px}
+  /* botão Imprimir PDF do dia (rodada 12) */
+  button.btn.print{border-color:#90a4ae;color:#37474f}
+  button.btn.print:disabled{opacity:.45;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div id="offlineBar"><span id="offlineBarTxt"></span></div>
+<header class="app">
+  <div class="logo">Q</div>
+  <h1>Quadro de Produção 2026</h1>
+  <span id="simBadge" title="Há lançamentos de simulação misturados aos dados — exclua em Configurações antes do uso real">🧪 SIMULAÇÃO ATIVA</span>
+  <nav class="tabs" id="tabs">
+    <button data-view="prodA" data-turno="A" class="active">Produção A</button>
+    <button data-view="prodB" data-turno="B">Produção B</button>
+    <button data-view="resumo" data-turno="N">Resumo Diário</button>
+    <button data-view="dash" data-turno="N">Dashboard</button>
+    <button data-view="config" data-turno="N">Configurações</button>
+    <button data-view="func" data-turno="N">Funcionários</button>
+  </nav>
+  <div class="userbox" id="userbox" style="display:none">
+    <button id="btnImportarRecente" style="display:none" title="Há um envio mais recente na nuvem">⤓ Importar último envio</button>
+    <span class="syncind" id="syncInd" title="Status de sincronização com a nuvem"><span class="sdot"></span><span id="syncTxt">—</span></span>
+    <span class="who" id="userNome"></span>
+    <span class="perfil" id="userPerfil"></span>
+    <button id="btnSair">Sair</button>
+  </div>
+</header>
+
+<main>
+  <!-- PRODUÇÃO A -->
+  <section class="view active" id="view-prodA">
+    <div class="turno-head A">
+      <div>
+        <h2>Turno A — Diurno</h2>
+        <div class="sub">Lançamento por janela de tempo · meta = horas × <span class="meta-h">17</span> fardos/h</div>
+      </div>
+      <div class="total"><div class="n" id="totalA">0</div><div class="l">Fardos no turno</div></div>
+    </div>
+    <div class="card">
+      <div class="subbar">
+        <label>Dia:</label>
+        <input type="date" id="diaA">
+        <button class="btn primary" id="iniciarA">▶ Iniciar o dia</button>
+        <button class="btn ok" id="concluirA">✓ Concluir o dia</button>
+        <button class="btn print" id="imprimirA" style="display:none" disabled title="Imprime o PDF do dia concluído">🖨 Imprimir PDF</button>
+        <span class="spacer"></span>
+        <span class="dia-status" id="statusDiaA"></span>
+      </div>
+      <div class="table-wrap"><table class="lanc" id="tblA"></table></div>
+      <div class="toolbar">
+        <button class="btn primary" data-add="A">+ Adicionar linha</button>
+        <button class="btn danger" data-clear="A">Limpar turno A</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUÇÃO B -->
+  <section class="view" id="view-prodB">
+    <div class="turno-head B">
+      <div>
+        <h2>Turno B — Noturno</h2>
+        <div class="sub">Trata virada de meia-noite (ex.: 22:00 → 02:00 = 4h) · meta = horas × <span class="meta-h">17</span> fardos/h</div>
+      </div>
+      <div class="total"><div class="n" id="totalB">0</div><div class="l">Fardos no turno</div></div>
+    </div>
+    <div class="card">
+      <div class="subbar">
+        <label>Dia:</label>
+        <input type="date" id="diaB">
+        <button class="btn primary B" id="iniciarB">▶ Iniciar o dia</button>
+        <button class="btn ok B" id="concluirB">✓ Concluir o dia</button>
+        <button class="btn print" id="imprimirB" style="display:none" disabled title="Imprime o PDF do dia concluído">🖨 Imprimir PDF</button>
+        <span class="spacer"></span>
+        <span class="dia-status" id="statusDiaB"></span>
+      </div>
+      <div class="table-wrap"><table class="lanc" id="tblB"></table></div>
+      <div class="toolbar">
+        <button class="btn primary B" data-add="B">+ Adicionar linha</button>
+        <button class="btn danger" data-clear="B">Limpar turno B</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESUMO -->
+  <section class="view" id="view-resumo">
+    <h2 style="margin:4px 0 16px">Resumo Diário de Produção</h2>
+    <div class="resumo-grid">
+      <div class="resumo-col A">
+        <h3><span class="dot A"></span> Turno A</h3>
+        <div class="card table-wrap"><table class="resumo" id="resumoA"></table></div>
+      </div>
+      <div class="resumo-col B">
+        <h3><span class="dot B"></span> Turno B</h3>
+        <div class="card table-wrap"><table class="resumo" id="resumoB"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="view" id="view-dash">
+    <h2 style="margin:4px 0 4px">Painel de Produção — Safra <span id="dashSafra">2026</span></h2>
+    <p id="dashPeriodoTxt" style="margin:0 0 12px;color:#7b8794;font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Toda a safra</p>
+    <div class="dash-filtro" id="dashFiltro">
+      <span class="df-lbl">Período:</span>
+      <input type="date" id="dashDe" title="Dia de produção inicial (começa às 06:00)">
+      <span style="color:#9aa5b1">→</span>
+      <input type="date" id="dashAte" title="Dia de produção final (vai até 05:59:59 do dia seguinte)">
+      <button class="btn" data-periodo="ontem">Ontem</button>
+      <button class="btn" data-periodo="hoje">Hoje</button>
+      <button class="btn primary" data-periodo="safra">Toda safra</button>
+      <span class="df-hint" title="A madrugada (00:00–05:59) conta no dia de produção que começou">⏱ cada dia: 06:00 → 05:59 do dia seguinte</span>
+    </div>
+    <div class="kpi-trios" id="kpis"></div>
+    <div class="chart-card" style="margin-bottom:20px">
+      <h3>Produção por Turno</h3>
+      <div id="chartTurno" style="margin-top:14px"></div>
+    </div>
+    <div class="chart-card" style="margin-bottom:20px">
+      <h3>Produção por hora do dia (soma do período)</h3>
+      <p style="margin:2px 0 12px;color:#7b8794;font-size:12px">Soma de fardos por horário de início da janela — mostra a curva de produção (em que horas a fábrica rende mais). O número entre parênteses é a média por hora; verde = na meta, âmbar = abaixo.</p>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--verde)"></span>Turno A</span>
+        <span><span class="sw" style="background:var(--azul)"></span>Turno B</span>
+      </div>
+      <div id="chartHora"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Ocorrências / Paradas (A + B)</h3>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--verde)"></span>Turno A</span>
+        <span><span class="sw" style="background:var(--azul)"></span>Turno B</span>
+      </div>
+      <div id="chart"></div>
+    </div>
+  </section>
+
+  <!-- CONFIG -->
+  <section class="view" id="view-config">
+    <h2 style="margin:4px 0 16px">Configurações</h2>
+    <div class="cfg-grid">
+      <div class="panel">
+        <h3>Parâmetro global</h3>
+        <p class="hint">Meta por hora — base de todas as metas do sistema (célula F6 da planilha original).</p>
+        <div class="field">
+          <label>Meta por hora</label>
+          <input type="number" id="cfgMeta" min="1" step="1"> <span>fardos/hora</span>
+        </div>
+        <div class="field">
+          <label>Meta em Ajustes</label>
+          <input type="number" id="cfgMetaAjuste" min="1" step="1"> <span>fardos/h na ocorrência “Ajustes iniciais/operacionais”</span>
+        </div>
+        <span class="save-flash" id="metaFlash">✓ salvo</span>
+
+        <h3 style="margin-top:24px">Backup dos dados</h3>
+        <p class="hint">Os dados ficam salvos neste navegador. Exporte um arquivo para backup ou para passar a outro computador.</p>
+        <div class="toolbar" style="padding-left:0">
+          <button class="btn" id="btnExport">⬇ Exportar dados (.json)</button>
+          <button class="btn" id="btnImport">⬆ Importar dados</button>
+          <input type="file" id="fileImport" accept="application/json" style="display:none">
+        </div>
+        <div class="toolbar" style="padding-left:0">
+          <button class="btn danger" id="btnReset">Apagar tudo</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Categorias de ocorrência (paradas)</h3>
+        <p class="hint">Lista do campo OCORRÊNCIA. Adicione ou remova itens conforme a operação.</p>
+        <ul class="cat-list" id="catList"></ul>
+        <div class="cat-add">
+          <input type="text" id="catNew" placeholder="Nova categoria de parada...">
+          <button class="btn primary" id="btnCatAdd">Adicionar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h3>Simulação / dados de teste</h3>
+      <p class="hint">Gera uma semana de lançamentos fictícios (Turno A 08:00–17:00 e Turno B 19:00–04:00, 1 hora por linha, com paradas) para testar o sistema. Não afeta seus lançamentos reais.</p>
+      <div class="toolbar" style="padding-left:0">
+        <button class="btn" id="btnSimGerar">🧪 Gerar simulação (1 semana)</button>
+        <button class="btn ghost" id="btnSimLimpar">Excluir simulação</button>
+        <span class="cfg-note" id="simInfo"></span>
+      </div>
+
+      <h3 style="margin-top:22px">Sincronização com a nuvem</h3>
+      <p class="hint">O usuário de inclusão (Produção A/B) envia automaticamente a cada 30 min e ao concluir o dia. ADM e Suporte só enviam clicando em “Sincronizar agora”.</p>
+      <div class="toolbar" style="padding-left:0">
+        <button class="btn primary" id="btnSincronizar">☁ Sincronizar agora</button>
+        <span class="cfg-note" id="syncInfo"></span>
+      </div>
+      <div class="toolbar" style="padding-left:0">
+        <span class="cfg-note" id="outboxInfo"></span>
+        <button class="btn ghost" id="btnOutboxExport">Exportar fila offline (.json)</button>
+        <button class="btn ghost" id="btnOutboxLimpar">Limpar fila</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panelSafra" style="margin-top:16px;display:none">
+      <h3>Safra</h3>
+      <p class="hint">Safra atual: <b id="safraAtual">—</b>. <b>Iniciar nova safra</b> primeiro BAIXA todo o histórico (CSV p/ Excel, TXT e backup .json) e depois ZERA os lançamentos para recomeçar a contagem de fardos. Mantém meta e categorias. (Apenas ADM/Suporte, e precisa de internet.)</p>
+      <div class="toolbar" style="padding-left:0">
+        <button class="btn" id="btnExportTudo">⬇ Baixar histórico (CSV + TXT + backup)</button>
+        <button class="btn danger" id="btnNovaSafra">🌱 Iniciar nova safra</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panelSuporte" style="margin-top:16px;display:none">
+      <h3>Suporte — senhas e acessos</h3>
+      <p class="hint">Visível apenas para o Suporte. Lista de senhas/perfis cadastrados no servidor.</p>
+      <div class="toolbar" style="padding-left:0">
+        <button class="btn" id="btnVerSenhas">🔑 Ver lista de senhas</button>
+      </div>
+      <ul class="cat-list" id="senhasList" style="margin-top:8px"></ul>
+    </div>
+  </section>
+
+  <!-- FUNCIONÁRIOS (roster + chamada na nuvem) -->
+  <section class="view" id="view-func">
+    <h2 style="margin:4px 0 4px">Produção por Funcionário</h2>
+    <p style="margin:0 0 16px;color:#7b8794;font-size:12px;text-transform:uppercase;letter-spacing:.5px;font-weight:600">Cadastro e chamada na nuvem · cada presente recebe a produção CHEIA das horas em que esteve no turno (sem rateio)</p>
+    <div id="funcConteudo">
+      <div class="panel">
+        <h3>Colaboradores</h3>
+        <p class="hint">Cadastre os colaboradores e habilite por turno (A e B independentes). O cadastro fica na nuvem — apenas ADM/Suporte editam.</p>
+        <div class="cat-add" id="funcAddForm">
+          <input type="text" id="funcNome" placeholder="Nome" aria-label="Nome do colaborador">
+          <input type="text" id="funcSobrenome" placeholder="Sobrenome" aria-label="Sobrenome do colaborador">
+          <button class="btn primary" id="btnFuncAdd">Adicionar</button>
+        </div>
+        <div class="table-wrap" style="margin-top:12px"><table class="resumo" id="rosterTbl"></table></div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <h3>Produção por colaborador</h3>
+        <p class="hint">Horas e fardos atribuídos a cada um pelas janelas em que esteve presente (produção cheia da janela, sem dividir entre os presentes). Considera toda a safra.</p>
+        <div class="table-wrap"><table class="resumo" id="funcCalcTbl"></table></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- OVERLAY DE LOGIN -->
+<div id="login" class="hidden">
+  <div class="login-card">
+    <div class="logo">Q</div>
+    <h2 id="loginTitulo">Quadro de Produção 2026</h2>
+    <p class="sub" id="loginSub">Selecione seu acesso e informe a senha.</p>
+    <div class="login-tipos">
+      <button type="button" class="tipo-btn" data-tipo="USUARIO">Usuário de Inclusão</button>
+      <button type="button" class="tipo-btn" data-tipo="ADM">ADM</button>
+    </div>
+    <div class="login-turnos" id="loginTurnos" style="display:none">
+      <button type="button" class="turno-btn" data-turno="A">Turno A</button>
+      <button type="button" class="turno-btn" data-turno="B">Turno B</button>
+    </div>
+    <input type="password" id="loginSenha" placeholder="Senha" autocomplete="off">
+    <button class="entrar" id="btnEntrar">Entrar</button>
+    <div class="login-erro" id="loginErro"></div>
+    <div class="login-offline" id="loginOffline" style="display:none">
+      <a id="linkOffline">Não conectou? Continuar offline (somente teste local)</a>
+    </div>
+    <div class="login-foot">Cada acesso tem sua senha.</div>
+  </div>
+</div>
+
+<div id="senhaModal" class="hidden">
+  <div class="senha-card">
+    <h3 id="senhaTitulo">Senha</h3>
+    <input type="password" id="senhaInput" placeholder="Digite a senha" autocomplete="off" inputmode="text">
+    <div class="senha-btns">
+      <button class="btn" id="senhaCancelar">Cancelar</button>
+      <button class="btn primary" id="senhaOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="funcModal" class="hidden">
+  <div class="senha-card">
+    <h3 id="funcModalTitulo">Chamada do turno</h3>
+    <p class="hint" id="funcModalSub" style="margin:-2px 0 8px"></p>
+    <div id="funcModalLista"></div>
+    <div class="cat-add" id="funcModalAdd" style="margin-top:10px">
+      <input type="text" id="funcModalNome" placeholder="Nome" aria-label="Nome do colaborador">
+      <input type="text" id="funcModalSobrenome" placeholder="Sobrenome" aria-label="Sobrenome do colaborador">
+      <button class="btn" id="btnFuncModalAdd">+ nome</button>
+    </div>
+    <div class="senha-btns">
+      <button class="btn" id="funcModalPular">Pular</button>
+      <button class="btn primary" id="funcModalSalvar">Salvar chamada</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============================================================
+   QUADRO DE PRODUÇÃO 2026  —  app de página única (offline)
+   ============================================================ */
+const STORE_KEY = "quadro_producao_2026";
+
+/* ============================================================
+   BACKEND (Google Apps Script) — conexão por fetch
+   ------------------------------------------------------------
+   OBS DE SEGURANÇA: a URL abaixo está só "ofuscada" em base64 para
+   não aparecer como texto cru. ISSO NÃO É CRIPTOGRAFIA — qualquer um
+   vê o endereço no DevTools. A proteção real é a senha validada no
+   servidor + trava anti-tentativas. Não coloque segredos no frontend.
+   ============================================================ */
+const _u = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6NmhqYVgwSWdGdmtvNWUwdmRIcUsycDgxY2ozSFFFbXo0N01pZ1VtQmJoSmo3dTBjVmhGZUNNQzJFdV9nRXZxY1ktZy9leGVj";
+const BACKEND_URL = atob(_u);
+
+// Chama uma função do backend. Retorna o valor de retorno da função (já desembrulhado).
+// Erros de REDE (sem internet / servidor inacessível) saem com err.rede = true;
+// erros do SERVIDOR (senha errada, sessão expirada...) saem como Error normal.
+async function api(fn){
+  const args = Array.prototype.slice.call(arguments, 1);
+  let resp, data;
+  try{
+    resp = await fetch(BACKEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" }, // evita preflight de CORS
+      body: JSON.stringify({ fn: fn, args: args }),
+      redirect: "follow"
+    });
+    data = await resp.json();
+  }catch(e){
+    const err = new Error("Sem conexão com o servidor.");
+    err.rede = true;
+    throw err;
+  }
+  if(!data.ok) throw new Error(data.erro || "Erro no servidor.");
+  return data.resultado;
+}
+function errMsg(e){ return (e && e.message) ? e.message : String(e); }
+function ehErroSessao(e){ return /sess[aã]o (expirada|ausente)/i.test(errMsg(e)); }
+
+// Sessão / modo de operação
+let ONLINE = false;                                   // true após login no servidor
+let SESSAO = { token:null, perfil:null, nome:null, turno:null, permissoes:{} };
+function logado(){ return !!SESSAO.token; }
+function ehADM(){ return SESSAO.perfil==="ADM" || SESSAO.perfil==="SUPORTE"; }
+function ehSuporte(){ return SESSAO.perfil==="SUPORTE"; }
+function podeConfig(){ return !ONLINE || ehADM(); }   // offline = liberado p/ teste
+
+// Categorias reais usadas na planilha (PRODUÇÃO A!M9:M40), limpas e sem duplicatas.
+const CATEGORIAS_PADRAO = [
+  "ABASTECIMENTO (PIRANHA/PRENSA)",
+  "ACIDENTE DE TRABALHO",
+  "AJUSTES INICIAIS/OPERACIONAIS",
+  "BUCHA - BATEDOR",
+  "BUCHA - DESCAROÇADOR",
+  "BUCHA - FIBRILHA",
+  "BUCHA - GERAL",
+  "BUCHA - HL/CICLONE",
+  "BUCHA - LIMPA PLUMA/CONDENSADOR",
+  "BUCHA - PIRANHA",
+  "BUCHA - PRENSA/CALCADOR",
+  "BUCHA - ROSCA/ROSCÃO",
+  "CONCERTAR CORRENTE DA ENGRENAGEM",
+  "HORÁRIO DE ALMOÇO/JANTAR",
+  "FOGO - BATEDOR",
+  "FOGO - DESCAROÇADOR",
+  "FOGO - GERAL",
+  "LIMPEZA",
+  "MANUTENÇÃO - BALANÇA",
+  "MANUTENÇÃO - BATEDOR",
+  "MANUTENÇÃO - ELÉTRICA GERAL",
+  "MANUTENÇÃO - LIMPA PLUMA",
+  "MANUTENÇÃO - PIRANHA/ESTEIRA",
+  "MANUTENÇÃO - PRENSA",
+  "MANUTENÇÃO - ROSCAS",
+  "PARADA - DESCANSO",
+  "PROBLEMA NO AR DO CAROÇO",
+  "PROBLEMA NO MOTOR",
+  "PROBLEMA NO MOTOR DO HL",
+  "TROCA DAS CORREIAS DO MOTOR DA CASCA",
+  "TROCA DO MANCAU",
+  "OUTROS"
+];
+
+let state = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      const s = JSON.parse(raw);
+      s.config = s.config || {};
+      if(typeof s.config.metaPorHora !== "number") s.config.metaPorHora = 17;
+      if(typeof s.config.metaAjuste !== "number") s.config.metaAjuste = 10;
+      if(typeof s.config.safra !== "string") s.config.safra = "2025/26";
+      if(!Array.isArray(s.config.descarocadorCats)) s.config.descarocadorCats = ["BUCHA - DESCAROÇADOR","FOGO - DESCAROÇADOR"];
+      if(!Array.isArray(s.config.categorias)) s.config.categorias = CATEGORIAS_PADRAO.slice();
+      if(!Array.isArray(s.lancamentos)) s.lancamentos = [];
+      if(!Array.isArray(s.concluidos)) s.concluidos = [];   // chaves "turno|data" concluídas
+      if(!Array.isArray(s.iniciados)) s.iniciados = [];     // chaves "turno|data" liberadas p/ edição
+      if(!Array.isArray(s.outbox)) s.outbox = [];           // fila de dias (modo offline)
+      if(!Array.isArray(s.funcionarios)) s.funcionarios = [];   // rodada 12: roster (nuvem)
+      normPresenca(s);                                          // rodada 12: presença "T|data" -> {inicio,fim,ajustes}
+      return migrarDesanso(s);
+    }
+  }catch(e){ console.warn("Falha ao ler dados:", e); }
+  return { config:{ metaPorHora:17, metaAjuste:10, safra:"2025/26", descarocadorCats:["BUCHA - DESCAROÇADOR","FOGO - DESCAROÇADOR"], categorias:CATEGORIAS_PADRAO.slice() }, lancamentos:[], concluidos:[], iniciados:[], outbox:[], funcionarios:[], presenca:{} };
+}
+
+// rodada 12 — normaliza state.presenca para o formato { "T|data": {inicio:[],fim:[],ajustes:{}} }.
+// Aceita e migra o formato antigo (array simples de ids = quem estava presente) -> vira o "inicio".
+function normPresenca(s){
+  if(!s.presenca || typeof s.presenca!=="object" || Array.isArray(s.presenca)) s.presenca = {};
+  for(const k in s.presenca){
+    const p = s.presenca[k];
+    if(Array.isArray(p)){ s.presenca[k] = { inicio:p.slice(), fim:[], ajustes:{} }; }
+    else if(p && typeof p==="object"){
+      p.inicio  = Array.isArray(p.inicio) ? p.inicio : [];
+      p.fim     = Array.isArray(p.fim)    ? p.fim    : [];
+      p.ajustes = (p.ajustes && typeof p.ajustes==="object" && !Array.isArray(p.ajustes)) ? p.ajustes : {};
+    } else { s.presenca[k] = { inicio:[], fim:[], ajustes:{} }; }
+  }
+  return s;
+}
+// rodada 12 — ids creditados numa chave de presença: união de quem entrou (início) e quem saiu (fim).
+function presCreditados(p){
+  if(!p) return [];
+  if(Array.isArray(p)) return p.slice();                       // tolera formato antigo
+  const set = new Set([...(p.inicio||[]), ...(p.fim||[])]);
+  return [...set];
+}
+
+// Migração de grafia antiga: "DESANSO" -> almoço/jantar; "...CARAÇO" -> "...CAROÇO".
+function migrarDesanso(s){
+  const mapa = c => c==="DESANSO" ? "HORÁRIO DE ALMOÇO/JANTAR"
+                  : c==="PROBLEMA NO AR DO CARAÇO" ? "PROBLEMA NO AR DO CAROÇO"
+                  : c;
+  if(s && s.config && Array.isArray(s.config.categorias))
+    s.config.categorias = s.config.categorias.map(mapa);
+  if(s && Array.isArray(s.lancamentos))
+    s.lancamentos.forEach(l => { if(l && l.ocorrencia) l.ocorrencia = mapa(l.ocorrencia); });
+  return s;
+}
+// Normaliza um estado vindo do servidor para o formato local.
+function normalizarEstadoLocal(s){
+  s = s || {};
+  s.config = s.config || {};
+  if(typeof s.config.metaPorHora !== "number") s.config.metaPorHora = 17;
+  if(typeof s.config.metaAjuste !== "number") s.config.metaAjuste = 10;
+  if(typeof s.config.safra !== "string") s.config.safra = "2025/26";
+  if(!Array.isArray(s.config.descarocadorCats)) s.config.descarocadorCats = ["BUCHA - DESCAROÇADOR","FOGO - DESCAROÇADOR"];
+  if(!Array.isArray(s.config.categorias)) s.config.categorias = CATEGORIAS_PADRAO.slice();
+  if(!Array.isArray(s.lancamentos)) s.lancamentos = [];
+  if(!Array.isArray(s.concluidos)) s.concluidos = [];
+  if(!Array.isArray(s.iniciados)) s.iniciados = [];
+  if(!Array.isArray(s.outbox)) s.outbox = [];
+  if(!Array.isArray(s.funcionarios)) s.funcionarios = [];   // rodada 12: roster vindo da nuvem
+  normPresenca(s);                                          // rodada 12: presença no formato novo
+  return migrarDesanso(s);
+}
+// Adota um estado do servidor e redesenha tudo.
+function adotarEstado(est){
+  state = normalizarEstadoLocal(est);
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  renderAll();
+}
+
+/* ============================================================
+   SINCRONIZAÇÃO COM A NUVEM
+   - usuário de inclusão (Produção A/B): upload automático a cada 30 min + ao concluir
+   - ADM/Suporte: upload só manual (botão "Sincronizar agora")
+   - tudo fica no cache local; quando offline, o app muda de cor
+   ============================================================ */
+const INTERVALO_SYNC_MS = 30*60*1000;     // 30 minutos (tempo real)
+let conexaoOk = navigator.onLine;
+let ultimoEnvioOk = null;                 // timestamp do último upload bem-sucedido
+let alteracoesPendentes = false;          // há mudanças locais ainda não enviadas?
+let enviando = false;
+let sessaoExpirada = false;               // sessão caiu no servidor (não é falta de internet)
+
+// save(): persiste no cache local com debounce (não trava a digitação) e marca pendência.
+let saveT = null;
+function gravarCacheAgora(){ clearTimeout(saveT); saveT = null; localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+function save(){
+  clearTimeout(saveT);
+  saveT = setTimeout(gravarCacheAgora, 300);
+  if(ONLINE && logado()) alteracoesPendentes = true;
+  atualizarStatusSync();
+}
+function podeAutoUpload(){ return ONLINE && logado() && SESSAO.perfil==="USUARIO"; }
+
+/* ============================================================
+   F10 - PENDÊNCIAS DE ENVIO (persistidas, sobrevivem ao recarregar)
+   Conta lançamentos editados que ainda NÃO foram confirmados na nuvem,
+   + dias concluídos offline na fila (outbox). Mostra na barra vermelha/âmbar.
+   ============================================================ */
+const PEND_KEY = "quadro_pend_2026";
+function lerPend(){ try{ const a = JSON.parse(localStorage.getItem(PEND_KEY)); return Array.isArray(a) ? a : []; }catch(e){ return []; } }
+function addPend(id){ if(!id) return; const a = lerPend(); if(a.indexOf(id)<0){ a.push(id); localStorage.setItem(PEND_KEY, JSON.stringify(a)); } }
+function clearPend(){ try{ localStorage.removeItem(PEND_KEY); }catch(e){} }
+function countPend(){ try{ return lerPend().length + ((state && Array.isArray(state.outbox)) ? state.outbox.length : 0); }catch(e){ return 0; } }
+
+// Barra superior: vermelha quando offline, âmbar quando online com pendências, escondida quando tudo enviado.
+function atualizarBarraPend(){
+  const bar = document.getElementById("offlineBar");
+  const txt = document.getElementById("offlineBarTxt");
+  if(!bar || !txt) return;
+  const n = countPend();
+  if(!conexaoOk){
+    bar.classList.remove("amarelo");
+    bar.style.display = "block";
+    txt.textContent = "⚠ Sem internet — trabalhando offline. " +
+      (n>0 ? (n + " lançamento(s)/dia(s) ainda NÃO enviados — serão enviados quando a internet voltar.")
+           : "Seus dados ficam salvos e sobem assim que a conexão voltar.");
+  } else if(n>0 && (sessaoExpirada || !ONLINE || SESSAO.perfil!=="USUARIO" || alteracoesPendentes)){
+    bar.classList.add("amarelo");
+    bar.style.display = "block";
+    txt.textContent = (sessaoExpirada ? "Sessão expirou — faça login de novo. " : "") +
+      n + " lançamento(s)/dia(s) aguardando envio à nuvem.";
+  } else if(n>0){
+    bar.classList.add("amarelo");
+    bar.style.display = "block";
+    txt.textContent = n + " lançamento(s)/dia(s) aguardando envio à nuvem.";
+  } else {
+    bar.style.display = "none";
+  }
+}
+
+// Envia o estado atual para a nuvem. silencioso=true não mostra toast.
+async function uploadParaNuvem(silencioso){
+  if(!ONLINE || !logado() || enviando) return false;
+  enviando = true; atualizarStatusSync();
+  try{
+    const r = await api("salvarEstado", SESSAO.token, state, tsCarregado);  // F9: manda a versão que carreguei
+    state = normalizarEstadoLocal(r.estado);
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    ultimoEnvioOk = Date.now();
+    alteracoesPendentes = false;
+    sessaoExpirada = false;
+    clearPend();                            // F10: tudo confirmado na nuvem
+    tsCarregado = r.ts || tsCarregado;
+    mostrarBotaoImportar(false);
+    marcarConexao(true);
+    const foco = document.activeElement && document.activeElement.closest && document.activeElement.closest("table.lanc");
+    if(!foco) renderAll();
+    if(!silencioso) toast("Enviado para a nuvem com sucesso ✓");
+    return true;
+  }catch(err){
+    if(err && err.rede){
+      marcarConexao(false);                 // problema de internet de verdade
+      if(!silencioso) toast("Sem conexão — não foi possível sincronizar agora.");
+    } else if(/CONFLITO_NUVEM/.test(errMsg(err))){
+      // F9: a nuvem tem um envio mais novo. NÃO sobrescreve — manda importar antes.
+      marcarConexao(true);
+      mostrarBotaoImportar(true);
+      if(!silencioso) toast("Há um envio MAIS NOVO na nuvem. Clique em “⤓ Importar último envio” (no topo) antes de sincronizar.", 5500);
+    } else if(ehErroSessao(err)){
+      sessaoExpirada = true;                // sessão caiu: NÃO é falta de internet
+      marcarConexao(true);
+      if(!silencioso) toast("Sua sessão expirou — clique em Sair e faça login novamente.");
+    } else {
+      marcarConexao(true);                  // servidor respondeu (outro erro)
+      if(!silencioso) toast("Não foi possível sincronizar: " + errMsg(err));
+    }
+    return false;
+  }finally{ enviando = false; atualizarStatusSync(); }
+}
+// Garante que as alterações locais foram enviadas (usado antes de concluir o dia).
+// Espera um envio em andamento terminar antes de tentar — assim "ocupado" não vira falso "falhou".
+async function flushSync(){
+  for(let i=0; i<40 && enviando; i++){ await new Promise(r=>setTimeout(r,150)); }   // até ~6s
+  return await uploadParaNuvem(true);
+}
+
+function horaCurta(ts){ const d=new Date(ts); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+function atualizarStatusSync(){
+  const ind = document.getElementById("syncInd"); if(!ind) return;
+  const txt = document.getElementById("syncTxt");
+  ind.classList.toggle("pend", alteracoesPendentes && conexaoOk);
+  let s;
+  if(!conexaoOk) s = "sem internet";
+  else if(sessaoExpirada) s = "sessão expirada — refaça o login";
+  else if(enviando) s = "enviando...";
+  else if(ultimoEnvioOk) s = "nuvem " + horaCurta(ultimoEnvioOk) + (alteracoesPendentes ? " · pendente" : "");
+  else s = alteracoesPendentes ? "não enviado" : "—";
+  if(txt) txt.textContent = s;
+  const si = document.getElementById("syncInfo");
+  if(si) si.textContent = ultimoEnvioOk ? ("Último envio: " + new Date(ultimoEnvioOk).toLocaleString("pt-BR")) : "Nenhum envio nesta sessão.";
+  atualizarBarraPend();   // F10: mantém a barra superior em dia
+}
+
+/* conexão / offline */
+function marcarConexao(ok){
+  conexaoOk = ok;
+  document.body.classList.toggle("offline", !ok);
+  atualizarStatusSync();
+}
+window.addEventListener("online",  ()=>{ marcarConexao(true);  if(podeAutoUpload() && alteracoesPendentes) tentarUploadComRetry(); });
+window.addEventListener("offline", ()=> marcarConexao(false));
+// Ao fechar/atualizar a página: grava o cache na hora e, se houver dados não enviados, avisa.
+window.addEventListener("beforeunload", e=>{
+  if(saveT) gravarCacheAgora();
+  if(ONLINE && logado() && alteracoesPendentes){ e.preventDefault(); e.returnValue = ""; }
+});
+
+/* Upload automático nas MARCAS DO RELÓGIO (:00 e :30). Se falhar, tenta a cada 2 min até subir.
+   Silencioso — não mostra nada na tela. Só o usuário de inclusão (Produção A/B). */
+function msAteProximaMeiaHora(){
+  const now = new Date();
+  const ms = now.getMinutes()*60000 + now.getSeconds()*1000 + now.getMilliseconds();
+  const meia = 30*60000;
+  return meia - (ms % meia);
+}
+let retryTimer = null;
+async function tentarUploadComRetry(){
+  if(!podeAutoUpload() || !alteracoesPendentes) return;
+  const ok = await uploadParaNuvem(true);                 // silencioso
+  clearTimeout(retryTimer);
+  if(!ok) retryTimer = setTimeout(tentarUploadComRetry, 2*60000);   // tenta de novo em 2 min
+}
+function agendarUploadRelogio(){
+  setTimeout(()=>{
+    if(podeAutoUpload() && alteracoesPendentes) tentarUploadComRetry();
+    agendarUploadRelogio();                                // reagenda para a próxima marca (:00/:30)
+  }, msAteProximaMeiaHora());
+}
+agendarUploadRelogio();
+
+/* ============================================================
+   "IMPORTAR ÚLTIMO ENVIO" (ADM / Suporte)
+   Nos minutos :02 e :32 (2 min após o upload do usuário), verifica se há um
+   envio MAIS RECENTE na nuvem e, se houver, mostra o botão para atualizar.
+   ============================================================ */
+let tsCarregado = 0;   // hora (do servidor) da versão que o cliente tem agora
+async function refreshTsCarregado(){
+  if(!ONLINE || !logado()) return;
+  try{ const s = await api("statusNuvem", SESSAO.token); if(s && s.ts) tsCarregado = s.ts; }catch(e){}
+}
+function mostrarBotaoImportar(mostrar){
+  const b = document.getElementById("btnImportarRecente");
+  if(b) b.style.display = mostrar ? "" : "none";
+}
+async function checarNovoEnvio(){
+  if(!(ONLINE && logado() && ehADM())) return;        // ADM e Suporte
+  try{
+    const s = await api("statusNuvem", SESSAO.token);
+    if(s && s.ts && s.ts > tsCarregado) mostrarBotaoImportar(true);
+  }catch(e){ /* silencioso (ex.: backend ainda sem statusNuvem) */ }
+}
+async function importarUltimoEnvio(){
+  try{
+    const e = await api("carregarEstado", SESSAO.token);
+    adotarEstado(e.estado);
+    tsCarregado = e.ts || tsCarregado;
+    mostrarBotaoImportar(false);
+    toast("Dados atualizados para a versão mais recente da nuvem ✓");
+  }catch(err){ toast("Falha ao importar: " + errMsg(err)); }
+}
+document.getElementById("btnImportarRecente").addEventListener("click", importarUltimoEnvio);
+
+function msAteProximoCheck(){           // próximo :02 ou :32
+  const now = new Date();
+  const ms = now.getMinutes()*60000 + now.getSeconds()*1000 + now.getMilliseconds();
+  const meia = 30*60000, off = 2*60000;
+  let prox = Math.floor(ms/meia)*meia + off;
+  if(prox <= ms) prox += meia;
+  return prox - ms;
+}
+function agendarCheckImportar(){
+  setTimeout(()=>{ checarNovoEnvio(); agendarCheckImportar(); }, msAteProximoCheck());
+}
+agendarCheckImportar();
+
+/* ---------- utilidades de cálculo ---------- */
+const uid = () => "l_" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+function timeToMin(t){
+  if(!t) return null;
+  const p = String(t).split(":");
+  const h = Number(p[0]), m = Number(p[1]);
+  if(isNaN(h) || isNaN(m)) return null;
+  return h*60 + m;
+}
+// Virada de meia-noite aplicada aos dois turnos por segurança.
+function calcHoras(inicio, fim){
+  const a = timeToMin(inicio), b = timeToMin(fim);
+  if(a===null || b===null) return null;
+  let diff = b - a;
+  if(diff < 0) diff += 1440;
+  return diff/60;                       // horas decimais
+}
+function calcMeta(horas){
+  if(horas===null) return null;
+  return horas * state.config.metaPorHora;
+}
+// Item 7 - meta efetiva POR HORA: cai para a meta de ajuste quando a ocorrência é "AJUSTES INICIAIS/OPERACIONAIS".
+function metaEfetiva(l){
+  return (l && l.ocorrencia === "AJUSTES INICIAIS/OPERACIONAIS")
+    ? (state.config.metaAjuste || 10)
+    : (state.config.metaPorHora || 17);
+}
+// Meta vigente da JANELA (linha) = meta efetiva/hora × horas da janela.
+function metaDaLinha(l){
+  const h = calcHoras(l.horaInicio, l.horaFim);
+  return h===null ? null : h * metaEfetiva(l);
+}
+function calcRealizado(fi, ff){
+  if(ff===""||ff===null||ff===undefined) return null;
+  const b = Number(ff);
+  if(isNaN(b)) return null;
+  const a = (fi===""||fi===null||fi===undefined||isNaN(Number(fi))) ? 0 : Number(fi);
+  return b - a;
+}
+function plural(n){ return n===1 ? "Fardo" : "Fardos"; }
+
+// Regra de status (recebe produção e meta já somadas). text = completo; short = curto p/ o resumo.
+function statusInfo(prod, meta){
+  if(prod===null || meta===null) return { text:"—", short:"—", cls:"" };
+  const metaInt = Math.floor(meta);
+  if(prod > metaInt){ const n = prod-metaInt; return { text:`Acima da Meta [ +${n} ${plural(n)} ]`, short:`+${n} ${plural(n).toLowerCase()}`, cls:"st-acima" }; }
+  if(prod === metaInt){ return prod===0 ? { text:"Sem Produção", short:"Sem produção", cls:"" } : { text:"Meta batida", short:"Meta batida", cls:"st-acima" }; }
+  const n = metaInt - prod;
+  return { text:`Abaixo da Meta [ -${n} ${plural(n)} ]`, short:`-${n} ${plural(n).toLowerCase()}`, cls:"st-abaixo" };
+}
+
+// F2 - Validação de produção fora do normal: bloqueia avançar e alerta.
+const FATOR_OUTLIER = 2;   // rodada 12: realizado acima de meta*2 = provável erro de digitação (antes 3)
+function motivoRealizadoInvalido(l){
+  const real = calcRealizado(l.fardoInicio, l.fardoFinal);
+  if(real===null) return null;
+  if(real < 0) return "O Fardo Final está MENOR que o Fardo Início (produção negativa). Confira os números.";
+  const meta = metaDaLinha(l);   // rodada 12: meta VIGENTE da janela (respeita a meta de ajuste = 10)
+  if(meta!==null && meta>0 && real > meta*FATOR_OUTLIER)
+    return "Produção muito acima do normal (mais de "+FATOR_OUTLIER+"x a meta da janela). Confira o Fardo Final — provável erro de digitação.";
+  return null;
+}
+
+// Item 8 - categorias que envolvem descaroçador (mostram o seletor 1-7) + opções do seletor (7 = backup).
+function envolveDescarocador(ocor){ return !!ocor && (state.config.descarocadorCats||[]).includes(ocor); }
+function descarocadorOptions(sel){
+  let o = "";
+  for(let i=1;i<=7;i++){ o += `<option value="${i}"${String(sel)===String(i)?" selected":""}>${i===7?"7 (backup)":i}</option>`; }
+  return o;
+}
+// Item 9 - "motivo informado" = ocorrência preenchida (e, se OUTROS, com texto).
+function temMotivo(l){
+  if(!l.ocorrencia) return false;
+  if(l.ocorrencia === "OUTROS") return !!(l.outrosTexto && String(l.outrosTexto).trim());
+  return true;
+}
+// Item 9 - retorna a mensagem (tooltip) se a linha exige motivo e ainda não tem; senão null.
+// Regra (rodada 12): hora completa com realizado <= metaVigente - 3 sem motivo OU OUTROS sem texto.
+function motivoObrigatorioPendente(l){
+  if(l.ocorrencia === "OUTROS" && !(l.outrosTexto && String(l.outrosTexto).trim()))
+    return "Descreva o motivo no campo de “Outros”.";
+  const real = calcRealizado(l.fardoInicio, l.fardoFinal);
+  const metaJan = metaDaLinha(l);
+  if(real!==null && metaJan!==null && real <= metaJan - 3 && !temMotivo(l))
+    return "Informe o motivo da baixa produção nesta hora.";
+  return null;
+}
+// Texto da ocorrência para Resumo/relatórios: anexa nº do descaroçador e o texto de "Outros".
+function ocorrenciaLabel(l){
+  if(!l || !l.ocorrencia) return "";
+  if(l.ocorrencia === "OUTROS") return "Outros: " + (l.outrosTexto ? String(l.outrosTexto) : "—");
+  if(envolveDescarocador(l.ocorrencia)) return l.ocorrencia + " (Descaroçador " + (l.descarocador || 7) + ")";
+  return l.ocorrencia;
+}
+
+function fmtNum(n){ return Number.isInteger(n) ? String(n) : n.toFixed(1).replace(".",","); }
+function fmtHoras(h){ return fmtNum(Math.round(h*100)/100) + "h"; }
+function fmtDateBR(iso){
+  if(!iso) return "";
+  const p = iso.split("-");
+  return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : iso;
+}
+
+/* ---------- helpers de dados ---------- */
+function rowsOf(turno){ return state.lancamentos.filter(l => l.turno===turno); }
+function chaveDia(turno, data){ return turno + "|" + data; }
+function isConcluido(turno, data){ return state.concluidos.includes(chaveDia(turno, data)); }
+function isIniciado(turno, data){ return (state.iniciados||[]).includes(chaveDia(turno, data)); }
+function diaTrabalho(turno){ const el=document.getElementById(turno==="A"?"diaA":"diaB"); return el ? el.value : ""; }
+
+// Linha travada (read-only)? Offline e ADM/Suporte editam tudo. USUÁRIO só edita o
+// próprio dia INICIADO e NÃO concluído. Linha em branco usa o "dia de trabalho" da barra.
+function diaBloqueado(turno, data){
+  if(!ONLINE || ehADM()) return false;
+  const dia = data || diaTrabalho(turno);
+  if(!dia) return true;
+  if(isConcluido(turno, dia)) return true;
+  if(dia !== diaAutorizado) return true;     // só edita o dia autorizado nesta sessão (após Iniciar o dia)
+  return false;
+}
+/* ----- LIMITE DE EXCLUSÃO DO USUÁRIO (rodada 12.1) -----
+   USUÁRIO só pode excluir as 2 ÚLTIMAS linhas CRIADAS do dia, e isso NÃO regride:
+   cada linha recebe um "seq" (ordem de criação) e a marca d'água (maior seq já criado no dia)
+   nunca diminui — guardada em localStorage, sobrevive à exclusão. Assim, depois que uma linha
+   fica "soterrada" por 2 lançamentos, ela trava de vez (mesmo apagando as de cima e lançando outra). */
+const SEQ_KEY = "quadro_seqmax_2026";
+function lerSeqMax(){ try{ const o=JSON.parse(localStorage.getItem(SEQ_KEY)); return (o&&typeof o==="object")?o:{}; }catch(e){ return {}; } }
+function gravarSeqMax(key, v){ const o=lerSeqMax(); if(!(o[key]>=v)){ o[key]=v; try{ localStorage.setItem(SEQ_KEY, JSON.stringify(o)); }catch(e){} } }
+function maxSeqLinhas(key){ let m=0; for(const l of state.lancamentos){ if((l.turno+"|"+l.data)===key && typeof l.seq==="number" && l.seq>m) m=l.seq; } return m; }
+function pisoSeqDia(key){ return Math.max(lerSeqMax()[key]||0, maxSeqLinhas(key)); }   // marca d'água: NUNCA regride
+// Carimba "seq" (ordem de criação) nas linhas reais do turno que ainda não têm. Roda no renderLanc.
+function carimbarSeqs(turno){
+  const porKey = {};
+  for(const l of state.lancamentos){
+    if(l.turno!==turno || isEmptyRow(l) || !l.data) continue;
+    (porKey[l.turno+"|"+l.data] = porKey[l.turno+"|"+l.data] || []).push(l);
+  }
+  let mudou = false;
+  for(const key in porKey){
+    let H = pisoSeqDia(key);
+    for(const l of porKey[key]){ if(typeof l.seq!=="number"){ l.seq = ++H; mudou = true; } }
+    gravarSeqMax(key, H);
+  }
+  if(mudou) save();   // persiste os seq novos (sobe na próxima sincronização)
+}
+// Pode excluir esta linha? Offline/ADM/Suporte: sim. USUÁRIO: só as 2 ÚLTIMAS CRIADAS do dia em edição.
+function podeExcluirLinha(turno, l){
+  if(!ONLINE || ehADM()) return true;
+  if(isEmptyRow(l)) return false;
+  if(isConcluido(turno, l.data)) return false;
+  if(l.data !== diaAutorizado) return false;          // USUÁRIO só mexe no dia autorizado nesta sessão
+  if(typeof l.seq !== "number") return false;         // sem ordem de criação -> travada
+  return l.seq >= pisoSeqDia(turno+"|"+l.data) - 1;   // só os 2 últimos seq (marca d'água não regride)
+}
+// Maior FARDO FINAL já lançado em qualquer turno (contador contínuo). Exclui uma linha opcional.
+function proximoFardoInicio(excludeId){
+  let max = null;
+  for(const l of state.lancamentos){
+    if(excludeId && l.id===excludeId) continue;
+    if(l.fardoFinal===""||l.fardoFinal==null) continue;
+    const v = Number(l.fardoFinal);
+    if(!isNaN(v) && (max===null || v>max)) max = v;
+  }
+  return max;   // número ou null
+}
+// HORA FIM da última linha real do turno -> sugestão de HORA INÍCIO da próxima janela.
+function proximaHoraInicio(turno, excludeId){
+  const reais = rowsOf(turno).filter(l => !isEmptyRow(l) && (!excludeId || l.id!==excludeId));
+  const ultima = reais[reais.length-1];
+  return (ultima && ultima.horaFim) ? ultima.horaFim : null;
+}
+
+/* ---------- DATA REAL (calendário) por linha ----------
+   A coluna "Data" mostra l.dataReal (data do calendário daquela hora). l.data continua sendo o
+   "dia de produção" (o turno é UMA unidade p/ iniciar/concluir, mesmo cruzando a meia-noite).
+   dataReal puxa a do lançamento anterior e AVANÇA 1 dia quando a janela anterior cruza 00:00. */
+function addDias(iso, n){ const p=String(iso).split("-"); if(p.length!==3) return iso; const d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2])); if(isNaN(d.getTime())) return iso; d.setDate(d.getDate()+n); return isoLocal(d); }
+function cruzouMeiaNoite(l){ const a=timeToMin(l.horaInicio), b=timeToMin(l.horaFim); return (a!==null && b!==null && b < a); }   // ex.: 23:00→00:00
+function dataRealDe(l){ return l.dataReal || l.data || ""; }
+function proximaDataReal(turno, excludeId){
+  const reais = rowsOf(turno).filter(l => !isEmptyRow(l) && (!excludeId || l.id!==excludeId));
+  const ultima = reais[reais.length-1];
+  if(!ultima) return diaTrabalho(turno) || "";                      // 1ª linha do turno: dia da barra
+  const base = dataRealDe(ultima) || diaTrabalho(turno) || "";
+  if(!base) return "";
+  return cruzouMeiaNoite(ultima) ? addDias(base, 1) : base;         // depois de cruzar 00:00 → dia seguinte
+}
+// Mensagem específica se a linha está incompleta/mal preenchida (data/hora fora do padrão, fardos faltando).
+function motivoLinhaIncompleta(l){
+  if(!l.data && !l.dataReal) return "Preencha a DATA (dd/mm/aaaa).";
+  if(!l.horaInicio) return "Preencha a HORA INÍCIO (hh:mm).";
+  if(!l.horaFim) return "Preencha a HORA FIM (hh:mm).";
+  const h = calcHoras(l.horaInicio, l.horaFim);
+  if(h===null) return "Horário fora do padrão (use hh:mm).";
+  if(h<=0) return "A HORA FIM precisa ser depois da HORA INÍCIO.";
+  if(l.fardoInicio===""||l.fardoInicio==null) return "Preencha o FARDO INÍCIO.";
+  if(l.fardoFinal===""||l.fardoFinal==null) return "Preencha o FARDO FINAL.";
+  if(calcRealizado(l.fardoInicio,l.fardoFinal) < 0) return "FARDO FINAL menor que o FARDO INÍCIO (produção negativa).";
+  return null;
+}
+
+// Dia autorizado nesta sessão (após "Iniciar o dia"). Reseta a cada login.
+let diaAutorizado = null;
+// É a linha de entrada (a última do turno = a que está sendo preenchida)?
+function isEntrada(turno, l){ const rows = rowsOf(turno); return rows.length>0 && rows[rows.length-1].id === l.id; }
+// Linha totalmente e corretamente preenchida?
+function linhaCompleta(l){
+  if(!l.data || !l.horaInicio || !l.horaFim) return false;
+  if(l.fardoInicio===""||l.fardoInicio==null) return false;
+  if(l.fardoFinal===""||l.fardoFinal==null) return false;
+  const real = calcRealizado(l.fardoInicio, l.fardoFinal);
+  if(real===null || real < 0) return false;          // fardo final < início = errado
+  const horas = calcHoras(l.horaInicio, l.horaFim);
+  if(horas===null || horas <= 0) return false;
+  if(motivoRealizadoInvalido(l)) return false;       // F2: bloqueia produção fora do normal
+  return true;
+}
+function isEmptyRow(l){
+  return !l.data && !l.horaInicio && !l.horaFim &&
+         (l.fardoInicio===""||l.fardoInicio==null) &&
+         (l.fardoFinal===""||l.fardoFinal==null) && !l.ocorrencia;
+}
+// Garante EXATAMENTE uma linha em branco no turno (a linha de entrada, exibida no topo).
+function ensureTrailingBlank(turno){
+  const vazias = rowsOf(turno).filter(isEmptyRow);
+  if(vazias.length > 1){
+    const manter = vazias[vazias.length-1].id;
+    state.lancamentos = state.lancamentos.filter(l => l.turno!==turno || !isEmptyRow(l) || l.id===manter);
+  }
+  if(rowsOf(turno).filter(isEmptyRow).length === 0){
+    state.lancamentos.push({ id:uid(), turno, data:"", horaInicio:"", horaFim:"", fardoInicio:"", fardoFinal:"", ocorrencia:"" });
+  }
+}
+
+/* ============================================================
+   RENDER — telas de lançamento
+   ============================================================ */
+function catOptions(sel){
+  let o = `<option value=""></option>`;
+  for(const c of state.config.categorias){
+    o += `<option value="${escapeHtml(c)}"${c===sel?" selected":""}>${escapeHtml(c)}</option>`;
+  }
+  return o;
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+
+function renderLanc(turno){
+  ensureTrailingBlank(turno);
+  carimbarSeqs(turno);            // rodada 12.1: ordem de criação p/ limitar exclusão do usuário
+  const rows = rowsOf(turno);
+  const tbl = document.getElementById(turno==="A" ? "tblA" : "tblB");
+  let html = `<thead><tr>
+      <th>Data</th><th>Hora Início</th><th>Hora Fim</th><th>Horas Prod.</th>
+      <th>Fardo Início</th><th>Fardo Final</th><th>Meta</th><th>Realizado</th>
+      <th>Ocorrência</th><th class="col-acao"></th>
+    </tr></thead><tbody>`;
+
+  // Total do turno (soma de todas as linhas, independente da ordem de exibição)
+  let total = 0;
+  for(const l of rows){ const r=calcRealizado(l.fardoInicio,l.fardoFinal); if(r!==null) total += r; }
+
+  // Ordem de exibição: linha(s) nova(s) no TOPO, depois mais recente -> mais antiga
+  const blanks = rows.filter(isEmptyRow);
+  const filled = rows.filter(l => !isEmptyRow(l));
+  const display = blanks.concat(filled.reverse());
+  const sugFardo = proximoFardoInicio();
+  const sugHora  = proximaHoraInicio(turno);
+  const sugData  = proximaDataReal(turno);   // data real sugerida p/ a linha nova (puxa anterior, +1 após meia-noite)
+
+  for(const l of display){
+    const horas = calcHoras(l.horaInicio, l.horaFim);
+    const meta  = metaDaLinha(l);   // item 7: meta vigente (10 em ajustes, senão 17 × horas)
+    const real  = calcRealizado(l.fardoInicio, l.fardoFinal);
+
+    const horasCell = horas===null ? `<span class="wait">Aguardando...</span>` : fmtHoras(horas);
+    const metaCell  = meta===null  ? `<span class="wait">Aguardando...</span>` : fmtNum(Math.round(meta*10)/10);
+    const realCell  = real===null  ? `<span class="wait">Aguardando...</span>` : fmtNum(real);
+    // F26 - cor do Realizado por hora (compara com a meta da própria janela)
+    const metaFloor = meta===null ? null : Math.floor(meta);
+    let realCls = "";
+    if(real!==null){
+      if(motivoRealizadoInvalido(l)) realCls = " erro";
+      else if(metaFloor!==null) realCls = (real >= metaFloor) ? " ok" : " abaixo";
+    }
+
+    const ehNova = isEmptyRow(l);
+    // Sugestões na linha nova: FARDO INÍCIO = último fardo final; HORA INÍCIO = última hora fim
+    const fiShown = (ehNova && (l.fardoInicio===""||l.fardoInicio==null) && sugFardo!==null) ? sugFardo : (l.fardoInicio??"");
+    const hiShown = (ehNova && !l.horaInicio && sugHora) ? sugHora : (l.horaInicio||"");
+    const dataShown = (ehNova && !dataRealDe(l) && sugData) ? sugData : dataRealDe(l);   // coluna Data = data real do calendário
+
+    const bloq = diaBloqueado(turno, l.data);
+    const dis  = bloq ? " disabled" : "";
+    let acao = "";
+    if(isEntrada(turno, l)){
+      if(!bloq && linhaCompleta(l)){
+        const pend = motivoObrigatorioPendente(l);   // item 9
+        acao = pend
+          ? `<button class="btn-prox bloq" data-prox="${l.id}" title="${escapeHtml(pend)}">✓ próxima</button>`
+          : `<button class="btn-prox" data-prox="${l.id}" title="Concluir esta hora e ir para a próxima">✓ próxima</button>`;
+      }
+    } else if(podeExcluirLinha(turno, l)){
+      acao = `<button class="btn-del" data-del="${l.id}" title="Excluir linha">✕</button>`;
+    } else if(bloq){
+      acao = `<span class="cadeado" title="Linha travada">🔒</span>`;
+    }
+    const invalida = !bloq && !!motivoRealizadoInvalido(l);                 // negativa ou > 2x a meta (vermelho)
+    const faltaMot = !bloq && !ehNova && !invalida && !!motivoObrigatorioPendente(l);   // baixa produção sem motivo (âmbar; não se já é inválida)
+    const cls = (bloq?" travada":"") + (ehNova?" row-nova":"") + (invalida?" linha-invalida":(faltaMot?" linha-falta-motivo":""));
+
+    html += `<tr data-id="${l.id}"${cls.trim()?` class="${cls.trim()}"`:""}>
+      <td data-label="Data"><input type="date"  data-f="data"        value="${dataShown}"${dis}></td>
+      <td data-label="Hora Início"><input type="time"  data-f="horaInicio"  value="${hiShown}"${dis}></td>
+      <td data-label="Hora Fim"><input type="time"  data-f="horaFim"     value="${l.horaFim||""}"${dis}></td>
+      <td class="calc" data-label="Horas">${horasCell}</td>
+      <td class="num" data-label="Fardo Início"><input type="number" min="0" step="1" data-f="fardoInicio" value="${fiShown}"${dis}></td>
+      <td class="num" data-label="Fardo Final"><input type="number" min="0" step="1" data-f="fardoFinal"  value="${l.fardoFinal??""}"${dis}></td>
+      <td class="calc" data-label="Meta">${metaCell}</td>
+      <td class="calc realizado${realCls}" data-label="Realizado">${realCell}</td>
+      <td data-label="Ocorrência"><div class="ocor-wrap"><select data-f="ocorrencia"${dis}>${catOptions(l.ocorrencia)}</select>${
+        envolveDescarocador(l.ocorrencia) ? `<select data-f="descarocador" class="sub-ctl"${dis} title="Descaroçador (7 = backup)">${descarocadorOptions(l.descarocador||7)}</select>` : ""
+      }${
+        l.ocorrencia==="OUTROS" ? `<input type="text" data-f="outrosTexto" class="sub-ctl" placeholder="descreva o motivo..." value="${escapeHtml(l.outrosTexto||"")}"${dis}>` : ""
+      }${
+        faltaMot ? `<span class="motivo-aviso">⚠ ${escapeHtml(motivoObrigatorioPendente(l))}</span>` : ""
+      }</div></td>
+      <td class="col-acao" data-label="">${acao}</td>
+    </tr>`;
+  }
+  html += `</tbody>`;
+  tbl.innerHTML = html;
+  document.getElementById(turno==="A"?"totalA":"totalB").textContent = fmtNum(total);
+  updateConcluirBar(turno);
+}
+
+// Atualiza a barra "Concluir o dia": data padrão + situação do dia escolhido.
+function updateConcluirBar(turno){
+  const inp = document.getElementById(turno==="A" ? "diaA" : "diaB");
+  const lbl = document.getElementById(turno==="A" ? "statusDiaA" : "statusDiaB");
+  if(!inp) return;
+  if(!inp.value){
+    const datas = rowsOf(turno).map(l=>l.data).filter(Boolean).sort();
+    inp.value = datas.length ? datas[datas.length-1] : new Date().toISOString().slice(0,10);
+  }
+  const data = inp.value;
+  const g = computeDaySummary(turno, data);
+  const concl = isConcluido(turno, data);
+  const autorizado = (data === diaAutorizado);
+  let estado;
+  if(concl) estado = `<span style="color:#1b8a3a">✓ concluído (travado)</span>`;
+  else if(ONLINE && !ehADM() && !autorizado) estado = `<span style="color:#b06a00">🔒 travado — clique “Iniciar o dia”</span>`;
+  else estado = `<span style="color:#2e7d32">editável</span>`;
+  const cont = g.linhas>0 ? `${g.linhas} linha(s) · ${fmtNum(g.prod)} fardos · ` : "";
+  lbl.innerHTML = cont + estado;
+  // Botão "Iniciar o dia": some em dia concluído e, p/ usuário, após autorizado (volta no próximo login).
+  const btnIni = document.getElementById(turno==="A" ? "iniciarA" : "iniciarB");
+  if(btnIni) btnIni.style.display = (concl || (ONLINE && !ehADM() && autorizado)) ? "none" : "";
+  // Botão "Imprimir PDF": só p/ o dia recém-concluído cujo PDF/relatório está em cache nesta sessão.
+  const btnImp = document.getElementById(turno==="A" ? "imprimirA" : "imprimirB");
+  if(btnImp){
+    const info = _pdfDia[turno];
+    const mostra = !!(info && info.data === data);
+    btnImp.style.display = mostra ? "" : "none";
+    btnImp.disabled = !mostra;
+  }
+}
+
+// Atualiza só as células calculadas + total + ação da linha, SEM reconstruir a tabela (preserva o foco).
+function refreshLinhaCalc(turno, tr, l){
+  const horas = calcHoras(l.horaInicio, l.horaFim);
+  const meta  = metaDaLinha(l);   // item 7: meta vigente
+  const real  = calcRealizado(l.fardoInicio, l.fardoFinal);
+  const calcs = tr.querySelectorAll("td.calc");   // ordem: [horas, meta, realizado]
+  if(calcs[0]) calcs[0].innerHTML = horas===null ? `<span class="wait">Aguardando...</span>` : fmtHoras(horas);
+  if(calcs[1]) calcs[1].innerHTML = meta===null  ? `<span class="wait">Aguardando...</span>` : fmtNum(Math.round(meta*10)/10);
+  if(calcs[2]){
+    calcs[2].innerHTML = real===null  ? `<span class="wait">Aguardando...</span>` : fmtNum(real);
+    calcs[2].classList.remove("ok","abaixo","erro");      // F26 - cor por hora
+    if(real!==null){
+      if(motivoRealizadoInvalido(l)) calcs[2].classList.add("erro");
+      else { const mf = meta===null ? null : Math.floor(meta); if(mf!==null) calcs[2].classList.add(real>=mf ? "ok" : "abaixo"); }
+    }
+  }
+  let total=0; for(const x of rowsOf(turno)){ const r=calcRealizado(x.fardoInicio,x.fardoFinal); if(r!==null) total+=r; }
+  document.getElementById(turno==="A"?"totalA":"totalB").textContent = fmtNum(total);
+  if(isEntrada(turno, l)){
+    const acaoTd = tr.querySelector("td.col-acao");
+    if(acaoTd){
+      if(!diaBloqueado(turno,l.data) && linhaCompleta(l)){
+        const pend = motivoObrigatorioPendente(l);   // item 9
+        acaoTd.innerHTML = pend
+          ? `<button class="btn-prox bloq" data-prox="${l.id}" title="${escapeHtml(pend)}">✓ próxima</button>`
+          : `<button class="btn-prox" data-prox="${l.id}" title="Concluir esta hora e ir para a próxima">✓ próxima</button>`;
+      } else acaoTd.innerHTML = "";
+    }
+  }
+  // destaque visível da linha + aviso inline (em tempo real, conforme digita)
+  const bloqL = diaBloqueado(turno, l.data);
+  const invalida = !bloqL && !!motivoRealizadoInvalido(l);
+  const faltaMot = !bloqL && !isEmptyRow(l) && !invalida && !!motivoObrigatorioPendente(l);
+  tr.classList.toggle("linha-invalida", invalida);
+  tr.classList.toggle("linha-falta-motivo", faltaMot);
+  const ocorWrap = tr.querySelector('td[data-label="Ocorrência"] .ocor-wrap');
+  if(ocorWrap){
+    let av = ocorWrap.querySelector(".motivo-aviso");
+    const msg = faltaMot ? motivoObrigatorioPendente(l) : "";
+    if(msg){ if(!av){ av=document.createElement("span"); av.className="motivo-aviso"; ocorWrap.appendChild(av); } av.textContent = "⚠ "+msg; }
+    else if(av){ av.remove(); }
+  }
+  updateConcluirBar(turno);
+}
+
+/* ============================================================
+   RENDER — resumo diário
+   ============================================================ */
+function buildResumo(turno){
+  const map = new Map();   // data -> {horas, meta, prod, ocor:Set}
+  for(const l of rowsOf(turno)){
+    if(!l.data) continue;
+    if(!map.has(l.data)) map.set(l.data, { horas:0, meta:0, prod:0, ocor:new Set() });
+    const g = map.get(l.data);
+    const horas = calcHoras(l.horaInicio, l.horaFim);
+    const meta  = metaDaLinha(l);   // item 7: meta vigente
+    const real  = calcRealizado(l.fardoInicio, l.fardoFinal);
+    if(horas!==null) g.horas += horas;
+    if(meta !==null) g.meta  += meta;
+    if(real !==null) g.prod  += real;
+    const ocorTxt = ocorrenciaLabel(l);
+    if(ocorTxt) g.ocor.add(ocorTxt);
+  }
+  return [...map.entries()].sort((a,b)=>a[0]<b[0]?-1:1); // data crescente
+}
+
+function renderResumo(turno){
+  const data = buildResumo(turno);
+  const tbl = document.getElementById(turno==="A" ? "resumoA" : "resumoB");
+  let html = `<thead><tr>
+      <th>Data</th><th>Turno</th><th>Horas</th><th>Meta</th><th>Produção</th><th>Status</th><th>Ocorrências</th>
+    </tr></thead><tbody>`;
+
+  if(data.length===0){
+    html += `<tr><td colspan="7" class="empty">Sem lançamentos ainda.</td></tr>`;
+  } else {
+    let tH=0,tM=0,tP=0;
+    for(const [date,g] of data){
+      tH+=g.horas; tM+=g.meta; tP+=g.prod;
+      const st = statusInfo(g.prod, g.meta);
+      const okBadge = isConcluido(turno, date) ? `<span class="badge-ok">✓ concluído</span>` : "";
+      html += `<tr>
+        <td>${fmtDateBR(date)}${okBadge}</td>
+        <td>${turno}</td>
+        <td>${fmtHoras(g.horas)}</td>
+        <td>${fmtNum(Math.round(g.meta))}</td>
+        <td>${fmtNum(g.prod)}</td>
+        <td class="status ${st.cls}">${st.short}</td>
+        <td class="ocor">${[...g.ocor].map(escapeHtml).join("<br>")}</td>
+      </tr>`;
+    }
+    html += `<tr class="tot-row">
+        <td colspan="2">TOTAL</td>
+        <td>${fmtHoras(tH)}</td>
+        <td>${fmtNum(Math.round(tM))}</td>
+        <td>${fmtNum(tP)}</td>
+        <td colspan="2"></td>
+      </tr>`;
+  }
+  html += `</tbody>`;
+  tbl.innerHTML = html;
+}
+
+/* ============================================================
+   RENDER — dashboard
+   ============================================================ */
+function totalRealizado(turno){
+  let t=0;
+  for(const l of rowsOf(turno)){
+    const r = calcRealizado(l.fardoInicio, l.fardoFinal);
+    if(r!==null) t+=r;
+  }
+  return t;
+}
+
+/* ---------- Dashboard: filtro de período (item 1) ---------- */
+let dashDe = "", dashAte = "";   // ISO yyyy-mm-dd; ambos vazios = toda a safra
+function isoLocal(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+// "DIA DE PRODUÇÃO": começa às 06:00 e vai até 05:59:59 do dia seguinte. A madrugada (00:00–05:59)
+// conta no dia que COMEÇOU. (Constante — mude aqui se o corte do turno for outro horário.)
+const CORTE_DIA_MIN = 6*60;   // 06:00
+function diaProducaoDe(l){
+  if(!l.dataReal) return l.data || "";                       // sem data real: l.data já é o dia de produção
+  const min = timeToMin(l.horaInicio);
+  if(min===null) return l.dataReal;
+  return min >= CORTE_DIA_MIN ? l.dataReal : addDias(l.dataReal, -1);   // 00:00–05:59 → dia anterior
+}
+function diaProducaoAgora(){
+  const d = new Date(); const min = d.getHours()*60 + d.getMinutes(); const hoje = isoLocal(d);
+  return min >= CORTE_DIA_MIN ? hoje : addDias(hoje, -1);
+}
+function dentroPeriodo(l){
+  const dp = diaProducaoDe(l);
+  if(dashDe && (!dp || dp < dashDe)) return false;
+  if(dashAte && (!dp || dp > dashAte)) return false;
+  return true;
+}
+function lancamentosNoPeriodo(){ return state.lancamentos.filter(dentroPeriodo); }
+// Texto do intervalo REAL (com horário) que o filtro está puxando — fica visível pro usuário.
+function janelaPeriodoTxt(){
+  if(!dashDe && !dashAte) return "Toda a safra";
+  const ini = dashDe ? (fmtDateBR(dashDe)+" 06:00:00") : "início";
+  const fim = dashAte ? (fmtDateBR(addDias(dashAte,1))+" 05:59:59") : "agora";
+  return "Dia de produção · " + ini + "  →  " + fim;
+}
+function setPeriodo(tipo){
+  if(tipo==="safra"){ dashDe=""; dashAte=""; }
+  else if(tipo==="hoje"){ const h=diaProducaoAgora(); dashDe=h; dashAte=h; }
+  else if(tipo==="ontem"){ const o=addDias(diaProducaoAgora(),-1); dashDe=o; dashAte=o; }
+  const de=document.getElementById("dashDe"), ate=document.getElementById("dashAte");
+  if(de) de.value=dashDe; if(ate) ate.value=dashAte;
+  renderDash();
+}
+
+// F27 - gráfico de produção por HORA do dia (soma do PERÍODO), pelo horário de início da janela.
+function renderChartPorHora(){
+  const el = document.getElementById("chartHora"); if(!el) return;
+  const buckets = new Map();   // hora(0-23) -> {a,b,real,horas}
+  for(const l of lancamentosNoPeriodo()){
+    if(!l.horaInicio) continue;
+    const real = calcRealizado(l.fardoInicio, l.fardoFinal); if(real===null) continue;
+    const h = parseInt(String(l.horaInicio).split(":")[0],10); if(isNaN(h)) continue;
+    if(!buckets.has(h)) buckets.set(h,{a:0,b:0,real:0,horas:0});
+    const g = buckets.get(h);
+    if(l.turno==="A") g.a+=real; else g.b+=real;
+    g.real+=real;
+    const hh = calcHoras(l.horaInicio,l.horaFim); if(hh!==null) g.horas+=hh;
+  }
+  const arr = [...buckets.entries()].map(([h,g])=>({h,a:g.a,b:g.b,real:g.real,horas:g.horas})).sort((x,y)=>x.h-y.h);
+  if(arr.length===0){ el.innerHTML = `<div class="empty">Sem lançamentos com horário ainda.</div>`; return; }
+  const max = Math.max.apply(null, arr.map(x=>x.real).concat([1]));
+  const meta = state.config.metaPorHora;
+  el.innerHTML = arr.map(x=>{
+    const wA = (x.a/max*100).toFixed(2), wB = (x.b/max*100).toFixed(2);
+    const med = x.horas>0 ? x.real/x.horas : 0;
+    const cor = med>=meta ? "#1b5e20" : "#8a6d00";
+    return `<div class="bar-row">
+      <div class="name">${String(x.h).padStart(2,"0")}h</div>
+      <div class="bar-track"><div class="bar-seg A" style="width:${wA}%"></div><div class="bar-seg B" style="width:${wB}%"></div></div>
+      <div class="val">${fmtNum(x.real)} <span style="color:${cor};font-weight:700">(${fmtNum(Math.round(med*10)/10)}/h)</span></div>
+    </div>`;
+  }).join("");
+}
+function renderDash(){
+  const ds = document.getElementById("dashSafra"); if(ds) ds.textContent = state.config.safra || "2025/26";
+  // descrição do período ativo (item 1)
+  const ptxt = document.getElementById("dashPeriodoTxt");
+  if(ptxt) ptxt.textContent = janelaPeriodoTxt();   // mostra o intervalo real (06:00 → 05:59:59) que está sendo puxado
+
+  // agregados do PERÍODO, por turno (item 1 rege todos os widgets)
+  const lp = lancamentosNoPeriodo();
+  const ag = { A:{prod:0,horas:0,dias:new Set()}, B:{prod:0,horas:0,dias:new Set()} };
+  const diasG = new Set();
+  for(const l of lp){
+    const g = ag[l.turno]; if(!g) continue;
+    const r = calcRealizado(l.fardoInicio, l.fardoFinal);
+    const h = calcHoras(l.horaInicio, l.horaFim);
+    if(r!==null) g.prod += r;
+    if(h!==null) g.horas += h;
+    if(r!==null && l.data){ g.dias.add(l.data); diasG.add(l.data); }
+  }
+  const tA=ag.A.prod, tB=ag.B.prod, geral=tA+tB;
+  const hA=ag.A.horas, hB=ag.B.horas, hG=hA+hB;
+  const fhA = hA>0 ? tA/hA : 0, fhB = hB>0 ? tB/hB : 0, fhG = hG>0 ? geral/hG : 0;   // item 2: fardos/h = total ÷ horas
+  const dA=ag.A.dias.size, dB=ag.B.dias.size, dG=diasG.size;
+  const medA = dA>0 ? tA/dA : 0, medB = dB>0 ? tB/dB : 0, medG = dG>0 ? geral/dG : 0;
+  const meta = state.config.metaPorHora || 17;
+
+  // trio = A (cima) + B (baixo) + A+B (cartão alto à direita). data-count/data-dec alimentam a animação (item 5).
+  function vCell(cls, titulo, num, unidade, dec){
+    const fin = dec ? fmtNum(Math.round(num*10)/10) : fmtNum(Math.round(num));
+    return `<div class="kpi ${cls}"><div class="l">${titulo}</div><div class="v" data-count="${num}" data-dec="${dec?1:0}">${fin}</div><div class="u">${unidade}</div></div>`;
+  }
+  function trio(titulo, a, b, g, unidade, dec){
+    return `<div class="kpi-trio">${
+      vCell("A kpi-sm", titulo+" — A", a, unidade, dec)}${
+      vCell("B kpi-sm", titulo+" — B", b, unidade, dec)}${
+      vCell("G", titulo+" — A+B", g, unidade, dec)}</div>`;
+  }
+  document.getElementById("kpis").innerHTML =
+      trio("Total Produzido", tA, tB, geral, "fardos", false)
+    + trio("Fardos/h médio", fhA, fhB, fhG, "fardos/h · meta "+meta, true)
+    + trio("Dias com produção", dA, dB, dG, "dias", false)
+    + trio("Média fardos/dia", medA, medB, medG, "fardos/dia", true);
+
+  // gráfico Produção por Turno (A x B)
+  const maxT = Math.max(tA, tB, 1);
+  document.getElementById("chartTurno").innerHTML =
+    [{n:"Turno A",v:tA,c:"A"},{n:"Turno B",v:tB,c:"B"}].map(x=>
+      `<div class="bar-row">
+        <div class="name">${x.n}</div>
+        <div class="bar-track"><div class="bar-seg ${x.c}" style="width:${(x.v/maxT*100).toFixed(2)}%"></div></div>
+        <div class="val">${fmtNum(x.v)}</div>
+      </div>`
+    ).join("");
+
+  renderChartPorHora();   // F27 - curva de produção por hora
+
+  // contagem de ocorrências (do PERÍODO) — A e B em barras próprias, empilhadas e coladas (item 4)
+  const counts = new Map(); // cat -> {a,b}
+  for(const l of lp){
+    if(!l.ocorrencia) continue;
+    if(!counts.has(l.ocorrencia)) counts.set(l.ocorrencia, {a:0,b:0});
+    const c = counts.get(l.ocorrencia);
+    if(l.turno==="A") c.a++; else c.b++;
+  }
+  const arr = [...counts.entries()]
+    .map(([name,c])=>({name, a:c.a, b:c.b, total:c.a+c.b}))
+    .filter(x=>x.total>0)
+    .sort((x,y)=>y.total-x.total);
+
+  const chart = document.getElementById("chart");
+  if(arr.length===0){
+    chart.innerHTML = `<div class="empty">Nenhuma ocorrência registrada no período.</div>`;
+    return;
+  }
+  // escala pelo MAIOR valor isolado (a ou b) da lista
+  const maxIso = Math.max(1, ...arr.flatMap(x=>[x.a, x.b]));
+  chart.innerHTML = arr.map(x=>{
+    const wA = (x.a/maxIso*100).toFixed(2), wB = (x.b/maxIso*100).toFixed(2);
+    return `<div class="ocor-row">
+      <div class="name">${escapeHtml(x.name)}</div>
+      <div class="ocor-bars">
+        <div class="ob-track"><div class="bar-seg A" style="width:${wA}%"></div></div>
+        <div class="ob-track"><div class="bar-seg B" style="width:${wB}%"></div></div>
+      </div>
+      <div class="val">${x.total} <span style="color:#9aa5b1;font-weight:600">(${x.a}/${x.b})</span></div>
+    </div>`;
+  }).join("");
+}
+
+/* ============================================================
+   RENDER — configurações
+   ============================================================ */
+function renderConfig(){
+  document.getElementById("cfgMeta").value = state.config.metaPorHora;
+  const ma=document.getElementById("cfgMetaAjuste"); if(ma) ma.value = state.config.metaAjuste;
+  document.querySelectorAll(".meta-h").forEach(el=>el.textContent = state.config.metaPorHora);
+  const sa = document.getElementById("safraAtual"); if(sa) sa.textContent = state.config.safra || "—";
+  const ul = document.getElementById("catList");
+  const descSet = state.config.descarocadorCats || [];
+  ul.innerHTML = state.config.categorias.map((c,i)=>
+    `<li><label class="cat-desc" title="Marque se esta parada envolve descaroçador (mostra o seletor 1–7 no lançamento)"><input type="checkbox" data-desccat="${escapeHtml(c)}"${descSet.includes(c)?" checked":""}>desc.</label><span>${escapeHtml(c)}</span><button class="btn-del" data-catdel="${i}" title="Remover">✕</button></li>`
+  ).join("");
+  updateConfigInfos();
+}
+
+/* ============================================================
+   RENDER global / navegação
+   ============================================================ */
+function renderAll(){
+  renderLanc("A");
+  renderLanc("B");
+  renderResumo("A");
+  renderResumo("B");
+  renderDash();
+  renderConfig();
+  renderFunc();   // rodada 12: mantém a aba Funcionários em dia após sync/adotarEstado
+}
+
+const views = {
+  prodA: ()=>renderLanc("A"),
+  prodB: ()=>renderLanc("B"),
+  resumo: ()=>{ renderResumo("A"); renderResumo("B"); },
+  dash: ()=>{ renderDash(); animarDashboard(); },   // item 5: anima ao abrir o Dashboard
+  config: renderConfig,
+  func: ()=>renderFunc()                            // item 11
+};
+
+/* ---------- Dashboard: animação de entrada (item 5) ---------- */
+function prefereSemAnimacao(){ return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+function countUp(el){
+  const target = Number(el.getAttribute("data-count")) || 0;
+  const dec = el.getAttribute("data-dec") === "1";
+  const fmtFinal = dec ? fmtNum(Math.round(target*10)/10) : fmtNum(Math.round(target));
+  const dur = 750, t0 = performance.now();
+  function step(t){
+    const p = Math.min(1, (t - t0) / dur);
+    const e = 1 - Math.pow(1 - p, 3);              // ease-out cubic
+    const v = target * e;
+    el.textContent = dec ? (Math.round(v*10)/10).toFixed(1).replace(".",",") : String(Math.round(v));
+    if(p < 1) requestAnimationFrame(step); else el.textContent = fmtFinal;
+  }
+  requestAnimationFrame(step);
+}
+function animarDashboard(){
+  const cont = document.getElementById("view-dash"); if(!cont) return;
+  if(prefereSemAnimacao()) return;                 // respeita prefers-reduced-motion
+  // cartões: fade + slide-up escalonado
+  cont.querySelectorAll(".kpi").forEach((c,i)=>{ c.style.animation="none"; void c.offsetWidth; c.style.animationDelay=(i*55)+"ms"; c.classList.add("anim"); });
+  // números: count-up
+  cont.querySelectorAll(".v[data-count]").forEach(countUp);
+  // barras: crescendo a partir de 0
+  cont.querySelectorAll(".bar-seg").forEach(el=>{ const w=el.style.width; if(!w) return; el.style.width="0%"; requestAnimationFrame(()=>{ el.style.width=w; }); });
+}
+
+/* ---------- Dashboard: filtro de período (item 1) ---------- */
+document.getElementById("dashFiltro").addEventListener("click", e=>{
+  const b = e.target.closest("[data-periodo]"); if(!b) return;
+  setPeriodo(b.dataset.periodo);
+});
+document.getElementById("dashDe").addEventListener("change", e=>{ dashDe = e.target.value || ""; renderDash(); });
+document.getElementById("dashAte").addEventListener("change", e=>{ dashAte = e.target.value || ""; renderDash(); });
+function showView(name){
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById("view-"+name).classList.add("active");
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("active", b.dataset.view===name));
+  (views[name]||(()=>{}))();
+}
+
+/* ============================================================
+   EVENTOS
+   ============================================================ */
+document.getElementById("tabs").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  showView(b.dataset.view);
+});
+
+// edição inline nas tabelas de lançamento
+function bindLancTable(turno){
+  const tbl = document.getElementById(turno==="A" ? "tblA" : "tblB");
+  const aplicarEdicao = (inp)=>{
+    const tr = inp.closest("tr"); const id = tr.dataset.id;
+    const l = state.lancamentos.find(x=>x.id===id); if(!l) return;
+    const field = inp.dataset.f;
+    // Preenchimentos automáticos na linha em edição:
+    // FARDO INÍCIO = último fardo final lançado; HORA INÍCIO = última hora fim do turno.
+    if(field!=="fardoInicio" && (l.fardoInicio===""||l.fardoInicio==null)){
+      const sug = proximoFardoInicio(l.id);
+      if(sug!==null){ l.fardoInicio = String(sug); const fi=tr.querySelector('[data-f="fardoInicio"]'); if(fi && fi.value==="") fi.value=l.fardoInicio; }
+    }
+    if(field!=="horaInicio" && !l.horaInicio){
+      const sh = proximaHoraInicio(turno, l.id);
+      if(sh){ l.horaInicio = sh; const hi=tr.querySelector('[data-f="horaInicio"]'); if(hi && !hi.value) hi.value=sh; }
+    }
+    if(field!=="data" && !l.dataReal){
+      const sd = proximaDataReal(turno, l.id);   // DATA real = puxa a anterior, +1 dia após meia-noite
+      if(sd){ l.dataReal = sd; const di=tr.querySelector('[data-f="data"]'); if(di && !di.value) di.value=sd; }
+    }
+    // Fardos: só inteiros, nunca negativos.
+    let valor = inp.value;
+    if(field==="fardoInicio" || field==="fardoFinal"){
+      if(valor!=="" && !isNaN(Number(valor))){
+        const n = Math.max(0, Math.floor(Number(valor)));
+        if(String(n)!==valor){ valor = String(n); inp.value = valor; }
+      }
+    }
+    if(field==="descarocador"){ l.descarocador = Number(valor)||7; }   // item 8: guarda como número
+    else if(field==="data"){ l.dataReal = valor; }   // coluna Data = SÓ data real (calendário); NÃO mexe no dia de produção (l.data)
+    else { l[field] = valor; }
+    // Item 8/9: ao escolher a ocorrência, ajusta campos dependentes
+    if(field==="ocorrencia"){
+      if(envolveDescarocador(l.ocorrencia)){ if(!l.descarocador) l.descarocador = 7; }   // default 7 (backup)
+      else { delete l.descarocador; }
+      if(l.ocorrencia!=="OUTROS") delete l.outrosTexto;
+    }
+    // USUÁRIO online: amarra a linha nova ao dia de trabalho autorizado
+    // DIA DE PRODUÇÃO (l.data) — fixado UMA vez; nunca pode ficar vazio numa linha real (toda agregação usa l.data).
+    // USUÁRIO: o dia autorizado. ADM/offline: o dia da barra; senão o dia de produção calculado (corte 06:00); senão a data real.
+    if(!l.data){ l.data = (ONLINE && !ehADM()) ? diaTrabalho(turno) : (diaTrabalho(turno) || diaProducaoDe(l) || l.dataReal || ""); }
+    if(ONLINE && logado()) addPend(id);   // F10: esta linha ainda não está na nuvem
+    save();
+    // Mudar a ocorrência revela/oculta o seletor de descaroçador e o campo "Outros" -> re-render.
+    if(field==="ocorrencia"){ renderLanc(turno); return; }
+    refreshLinhaCalc(turno, tr, l);   // in-place: não reconstrói a tabela -> preserva o foco
+  };
+  // Data e hora só são gravadas ao TERMINAR a edição (change) — evita salvar valores
+  // parciais (ex.: ano "0002") enquanto digita. Números/ocorrência atualizam em tempo real.
+  tbl.addEventListener("input", e=>{
+    const inp = e.target.closest("[data-f]"); if(!inp) return;
+    if(inp.type==="date" || inp.type==="time") return;
+    aplicarEdicao(inp);
+  });
+  tbl.addEventListener("change", e=>{
+    const inp = e.target.closest("[data-f]"); if(!inp) return;
+    aplicarEdicao(inp);
+  });
+  // ações: "✓ próxima hora" e excluir linha
+  tbl.addEventListener("click", e=>{
+    const prox = e.target.closest("[data-prox]");
+    if(prox){
+      const l = state.lancamentos.find(x=>x.id===prox.dataset.prox);
+      const motivo = l ? motivoRealizadoInvalido(l) : null;   // F2: não deixa avançar com produção fora do normal
+      if(motivo){ toast("⚠ " + motivo, 5000); return; }
+      const inc = l ? motivoLinhaIncompleta(l) : "Linha não encontrada.";   // data/hora fora do padrão ou fardos faltando
+      if(inc){ toast("⚠ " + inc, 4500); return; }
+      const pend = l ? motivoObrigatorioPendente(l) : null;   // item 9: baixa produção / Outros sem texto
+      if(pend){ toast("⚠ " + pend, 4800); return; }
+      if(!l || !linhaCompleta(l)){ toast("Preencha a linha corretamente antes de passar para a próxima hora."); return; }
+      ensureTrailingBlank(turno);          // cria a próxima linha em branco
+      save(); renderLanc(turno);           // re-render: a nova linha aparece no topo
+      const novo = document.querySelector(`#tbl${turno} tbody tr input:not([disabled])`);
+      if(novo) novo.focus();
+      return;
+    }
+    const del = e.target.closest("[data-del]");
+    if(del){
+      const id = del.dataset.del;
+      const l = state.lancamentos.find(x=>x.id===id);
+      if(l && !podeExcluirLinha(turno, l)){
+        toast("Você só pode excluir as 2 ÚLTIMAS linhas lançadas. As anteriores ficam travadas (chame o ADM se precisar corrigir).", 4500);
+        return;
+      }
+      state.lancamentos = state.lancamentos.filter(x=>x.id!==id);
+      save(); renderLanc(turno);
+    }
+  });
+}
+bindLancTable("A");
+bindLancTable("B");
+
+// toolbar (adicionar / limpar)
+document.querySelectorAll("[data-add]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const t = btn.dataset.add;
+    if(ONLINE && !ehADM() && diaTrabalho(t)!==diaAutorizado){
+      toast("Inicie o dia primeiro (botão “Iniciar o dia”)."); return;
+    }
+    ensureTrailingBlank(t);
+    renderLanc(t);
+    const inp = document.querySelector(`#tbl${t} tbody tr input:not([disabled])`);
+    if(inp) inp.focus();   // foca a linha nova (no topo)
+  });
+});
+document.querySelectorAll("[data-clear]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const t = btn.dataset.clear;
+    if(ONLINE && !ehADM()){ toast("Apenas ADM/Suporte podem limpar o turno."); return; }
+    if(!confirm(`Apagar TODOS os lançamentos do Turno ${t}? Esta ação não pode ser desfeita.`)) return;
+    state.lancamentos = state.lancamentos.filter(x=>x.turno!==t);
+    save(); renderLanc(t);
+  });
+});
+
+// config: meta por hora
+const metaInput = document.getElementById("cfgMeta");
+metaInput.addEventListener("input", ()=>{
+  if(!podeConfig()){ toast("Apenas ADM/Suporte alteram a meta."); return; }
+  const v = parseInt(metaInput.value,10);
+  if(!isNaN(v) && v>0){
+    state.config.metaPorHora = v;
+    save();
+    document.querySelectorAll(".meta-h").forEach(el=>el.textContent = v);
+    const f = document.getElementById("metaFlash"); f.classList.add("show");
+    setTimeout(()=>f.classList.remove("show"), 1200);
+  }
+});
+// ADM/Suporte não sobem automático: lembrar de sincronizar após mexer na config.
+function lembrarSincronizar(){
+  if(ONLINE && ehADM()) toast("Alteração salva neste computador — clique em “Sincronizar agora” (Configurações) para enviar à nuvem.");
+}
+metaInput.addEventListener("change", lembrarSincronizar);
+
+// config: meta de ajuste (item 7)
+const metaAjusteInput = document.getElementById("cfgMetaAjuste");
+metaAjusteInput.addEventListener("input", ()=>{
+  if(!podeConfig()){ toast("Apenas ADM/Suporte alteram a meta."); return; }
+  const v = parseInt(metaAjusteInput.value,10);
+  if(!isNaN(v) && v>0){
+    state.config.metaAjuste = v;
+    save();
+    const f = document.getElementById("metaFlash"); f.classList.add("show"); setTimeout(()=>f.classList.remove("show"),1200);
+    renderLanc("A"); renderLanc("B");
+  }
+});
+metaAjusteInput.addEventListener("change", lembrarSincronizar);
+
+// config: categorias
+document.getElementById("btnCatAdd").addEventListener("click", addCat);
+document.getElementById("catNew").addEventListener("keydown", e=>{ if(e.key==="Enter") addCat(); });
+function addCat(){
+  if(!podeConfig()){ toast("Apenas ADM/Suporte editam categorias."); return; }
+  const inp = document.getElementById("catNew");
+  const v = inp.value.trim();
+  if(!v) return;
+  if(state.config.categorias.includes(v)){ inp.value=""; return; }
+  state.config.categorias.push(v);
+  save(); inp.value=""; renderConfig(); renderLanc("A"); renderLanc("B");
+  lembrarSincronizar();
+}
+document.getElementById("catList").addEventListener("click", e=>{
+  const del = e.target.closest("[data-catdel]"); if(!del) return;
+  state.config.categorias.splice(Number(del.dataset.catdel),1);
+  save(); renderConfig();
+  lembrarSincronizar();
+});
+// config: toggle "envolve descaroçador" por categoria (item 8)
+document.getElementById("catList").addEventListener("change", e=>{
+  const cb = e.target.closest("[data-desccat]"); if(!cb) return;
+  if(!podeConfig()){ toast("Apenas ADM/Suporte."); renderConfig(); return; }
+  const cat = cb.getAttribute("data-desccat");
+  if(!Array.isArray(state.config.descarocadorCats)) state.config.descarocadorCats = [];
+  if(cb.checked){ if(!state.config.descarocadorCats.includes(cat)) state.config.descarocadorCats.push(cat); }
+  else { state.config.descarocadorCats = state.config.descarocadorCats.filter(c=>c!==cat); }
+  save(); renderLanc("A"); renderLanc("B"); lembrarSincronizar();
+});
+
+// backup
+document.getElementById("btnExport").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `quadro-producao-2026_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+});
+document.getElementById("btnImport").addEventListener("click", ()=>{
+  if(ONLINE){ importarDoServidor(); }
+  else { document.getElementById("fileImport").click(); }
+});
+async function importarDoServidor(){
+  if(!ehADM()){ toast("Apenas ADM/Suporte podem importar do servidor."); return; }
+  const opt = prompt("Importar qual backup do servidor?\n\n1 = Backup dinâmico mais recente\n2 = Último dia concluído", "1");
+  if(opt!=="1" && opt!=="2") return;
+  try{
+    const r = await api("importar", SESSAO.token, opt==="2" ? "concluido" : "dinamico");
+    if(!r.ok){ toast(r.motivo || "Nada para importar."); return; }
+    const alvo = r.tipo==="concluido" ? ("último dia concluído (" + fmtDateBR(r.meta.data) + " / Turno " + r.meta.turno + ")") : "backup dinâmico mais recente";
+    if(!confirm("Isto vai substituir o que está na tela pelo " + alvo + ". Continuar?")) return;
+    adotarEstado(r.estado);
+    toast("Importado: " + alvo + ".");
+  }catch(err){ toast("Falha ao importar: " + errMsg(err)); }
+}
+document.getElementById("fileImport").addEventListener("change", e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const s = JSON.parse(reader.result);
+      if(!s.config || !Array.isArray(s.lancamentos)) throw new Error("Formato inválido");
+      if(!confirm("Importar substituirá todos os dados atuais. Continuar?")) return;
+      state = normalizarEstadoLocal(s);
+      state.config.metaPorHora = Number(state.config.metaPorHora)||17;
+      save(); renderAll();
+      alert("Dados importados com sucesso.");
+    }catch(err){ alert("Não foi possível importar: "+err.message); }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if(!confirm("Apagar TODOS os dados (lançamentos e configurações)? Esta ação não pode ser desfeita.")) return;
+  localStorage.removeItem(STORE_KEY);
+  state = load();
+  renderAll(); showView("prodA");
+});
+
+/* ============================================================
+   CONCLUIR O DIA · SIMULAÇÃO · FILA DE ENVIO (NUVEM)
+   ============================================================ */
+// Consolida um dia (turno+data): somas, status, ocorrências e detalhes das linhas.
+function computeDaySummary(turno, data){
+  const det = [];
+  let horas=0, meta=0, prod=0; const ocor=new Set();
+  for(const l of rowsOf(turno)){
+    if(l.data!==data) continue;
+    const h=calcHoras(l.horaInicio,l.horaFim);
+    const m=metaDaLinha(l);   // item 7: meta vigente da janela
+    const r=calcRealizado(l.fardoInicio,l.fardoFinal);
+    if(h!==null) horas+=h;
+    if(m!==null) meta+=m;
+    if(r!==null) prod+=r;
+    const ocorTxt = ocorrenciaLabel(l);
+    if(ocorTxt) ocor.add(ocorTxt);
+    det.push({
+      horaInicio:l.horaInicio, horaFim:l.horaFim,
+      horasProd: h===null?null:Math.round(h*100)/100,
+      fardoInicio: l.fardoInicio===""?null:Number(l.fardoInicio),
+      fardoFinal:  l.fardoFinal===""?null:Number(l.fardoFinal),
+      meta: m===null?null:Math.round(m*100)/100,
+      realizado: r,
+      ocorrencia: ocorTxt
+    });
+  }
+  return { linhas:det.length, horas, meta, prod, ocor:[...ocor], status:statusInfo(prod,meta), detalhes:det };
+}
+
+/* ============================================================
+   RODADA 12 — PDF DIÁRIO (gera no front -> sobe ao Drive -> libera impressão)
+   jsPDF + autotable carregados sob demanda (CDN). Fallback: relatório HTML + print.
+   ============================================================ */
+let _jsPdfPromise = null;
+function carregarScript(src){
+  return new Promise((res,rej)=>{ const s=document.createElement("script"); s.src=src; s.async=true; s.onload=res; s.onerror=()=>rej(new Error("Falha ao carregar "+src)); document.head.appendChild(s); });
+}
+function carregarJsPDF(){
+  if(window.jspdf && window.jspdf.jsPDF) return Promise.resolve(true);
+  if(_jsPdfPromise) return _jsPdfPromise;
+  _jsPdfPromise = (async ()=>{
+    await carregarScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+    await carregarScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js");
+    if(!(window.jspdf && window.jspdf.jsPDF)) throw new Error("jsPDF indisponível");
+    return true;
+  })().catch(e=>{ _jsPdfPromise=null; throw e; });
+  return _jsPdfPromise;
+}
+// Gera o PDF do dia (P&B, A4). Retorna { blob, base64, nome }. Lança se o gerador não carregar.
+async function gerarPdfDia(turno, data, g){
+  await carregarJsPDF();
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:"pt", format:"a4" });
+  const W = doc.internal.pageSize.getWidth(), PH = doc.internal.pageSize.getHeight();
+  const safra = state.config.safra || "";
+  const agora = new Date();
+  const hh = String(agora.getHours()).padStart(2,"0"), mm = String(agora.getMinutes()).padStart(2,"0");
+  // Cabeçalho
+  doc.setFont("helvetica","bold"); doc.setFontSize(15); doc.setTextColor(20);
+  doc.text("Produção Diária de Algodão", W/2, 44, {align:"center"});
+  doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(80);
+  doc.text(`Safra ${safra}   ·   Turno ${turno}   ·   ${fmtDateBR(data)}`, W/2, 62, {align:"center"});
+  doc.text(`Gerado em ${fmtDateBR(isoLocal(agora))} ${hh}:${mm}`, W/2, 76, {align:"center"});
+  doc.setDrawColor(170); doc.line(40, 86, W-40, 86);
+  // KPIs
+  const st = statusInfo(g.prod, g.meta);
+  doc.setFontSize(10); doc.setTextColor(30);
+  const kpis = [["Produção total", fmtNum(g.prod)+" fardos"],["Meta do dia", fmtNum(Math.round(g.meta))],
+                ["Horas trabalhadas", fmtHoras(g.horas)],["Status", st.text]];
+  let ky = 104;
+  kpis.forEach(([k,v])=>{ doc.setFont("helvetica","bold"); doc.text(k+":", 44, ky); doc.setFont("helvetica","normal"); doc.text(String(v), 168, ky); ky+=16; });
+  // Tabela do dia (espelha computeDaySummary)
+  const body = g.detalhes.map(d=>[
+    d.horaInicio||"", d.horaFim||"",
+    d.horasProd==null?"":(fmtNum(Math.round(d.horasProd*100)/100)+"h"),
+    d.fardoInicio==null?"":String(d.fardoInicio), d.fardoFinal==null?"":String(d.fardoFinal),
+    d.meta==null?"":fmtNum(Math.floor(d.meta)),
+    d.realizado==null?"":fmtNum(d.realizado),
+    d.ocorrencia||""
+  ]);
+  body.push(["TOTAL","",fmtHoras(g.horas),"","",fmtNum(Math.round(g.meta)),fmtNum(g.prod),""]);
+  doc.autoTable({
+    startY: ky+8,
+    head: [["Início","Fim","Horas","Fardo iní.","Fardo fin.","Meta","Realiz.","Ocorrência"]],
+    body,
+    styles:{ fontSize:8.5, cellPadding:3, textColor:30, lineColor:200, lineWidth:0.3 },
+    headStyles:{ fillColor:[235,235,235], textColor:20, fontStyle:"bold" },
+    columnStyles:{ 7:{ cellWidth:150 } },
+    theme:"grid",
+    didParseCell:(h)=>{ if(h.section==="body" && h.row.index===body.length-1){ h.cell.styles.fontStyle="bold"; h.cell.styles.fillColor=[245,245,245]; } }
+  });
+  // Prestadores presentes
+  const prest = calcPrestadoresDoDia(turno, data);
+  let y2 = doc.lastAutoTable.finalY + 20;
+  doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(20);
+  doc.text("Prestadores presentes", 44, y2);
+  if(prest.length){
+    doc.autoTable({
+      startY: y2+6,
+      head: [["Colaborador","Horas","Fardos atribuídos"]],
+      body: prest.map(p=>[p.nome, fmtHoras(p.horas), fmtNum(Math.round(p.fardos))]),
+      styles:{ fontSize:9, cellPadding:3, textColor:30, lineColor:200, lineWidth:0.3 },
+      headStyles:{ fillColor:[235,235,235], textColor:20, fontStyle:"bold" },
+      theme:"grid"
+    });
+    y2 = doc.lastAutoTable.finalY;
+  } else {
+    doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(110);
+    doc.text("Nenhum prestador registrado na chamada.", 44, y2+16); y2 += 16;
+  }
+  // Assinaturas
+  let sy = y2 + 64;
+  if(sy > PH-70){ doc.addPage(); sy = 120; }
+  const colW = (W-80)/2;
+  doc.setDrawColor(60);
+  doc.line(60, sy, 60+colW-30, sy);
+  doc.line(60+colW+10, sy, 60+colW*2-20, sy);
+  doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(40);
+  doc.text("Gestor da Produção", 60, sy+14);
+  doc.text("Gestor Administrativo", 60+colW+10, sy+14);
+  doc.text("Data: ___/___/______", 60, sy+34);
+  const nome = `Produção Turno ${turno} - ${data} - ${hh}h${mm}m.pdf`;
+  const blob = doc.output("blob");
+  const base64 = (doc.output("datauristring").split(",")[1]) || "";
+  return { blob, base64, nome };
+}
+
+let _pdfDia = {};   // turno -> { url, nome, data, modo, g }
+function prepararImpressao(turno, data, pdf, g){
+  const prev = _pdfDia[turno]; if(prev && prev.url){ try{ URL.revokeObjectURL(prev.url); }catch(e){} }
+  if(pdf && pdf.blob){ _pdfDia[turno] = { url:URL.createObjectURL(pdf.blob), nome:pdf.nome, data, modo:"pdf" }; }
+  else { _pdfDia[turno] = { data, modo:"html", g }; }   // fallback: imprime relatório HTML
+  updateConcluirBar(turno);   // o botão Imprimir é gerido lá (só aparece p/ o dia cujo PDF está em cache)
+}
+function imprimirDia(turno){
+  const info = _pdfDia[turno]; if(!info){ toast("Conclua o dia para gerar o relatório."); return; }
+  if(info.modo==="pdf" && info.url){
+    const w = window.open(info.url, "_blank");
+    if(!w){ const a=document.createElement("a"); a.href=info.url; a.download=info.nome||"producao.pdf"; a.click(); toast("Pop-up bloqueado — o PDF foi baixado; abra para imprimir."); }
+  } else { imprimirRelatorioHTML(turno, info.data, info.g); }
+}
+// Fallback de impressão: relatório HTML (P&B) numa nova janela que chama print.
+function imprimirRelatorioHTML(turno, data, g){
+  g = g || computeDaySummary(turno, data);
+  const prest = calcPrestadoresDoDia(turno, data);
+  const st = statusInfo(g.prod, g.meta);
+  const linhas = g.detalhes.map(d=>`<tr><td>${d.horaInicio||""}</td><td>${d.horaFim||""}</td><td>${d.horasProd==null?"":fmtNum(Math.round(d.horasProd*100)/100)+"h"}</td><td>${d.fardoInicio==null?"":d.fardoInicio}</td><td>${d.fardoFinal==null?"":d.fardoFinal}</td><td>${d.meta==null?"":fmtNum(Math.floor(d.meta))}</td><td>${d.realizado==null?"":fmtNum(d.realizado)}</td><td>${escapeHtml(d.ocorrencia||"")}</td></tr>`).join("");
+  const presLin = prest.length ? prest.map(p=>`<tr><td>${escapeHtml(p.nome)}</td><td>${fmtHoras(p.horas)}</td><td>${fmtNum(Math.round(p.fardos))}</td></tr>`).join("") : `<tr><td colspan="3">Nenhum prestador na chamada.</td></tr>`;
+  const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Produção Turno ${turno} - ${fmtDateBR(data)}</title>
+   <style>body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:24px}h1{font-size:18px;text-align:center;margin:0}.sub{text-align:center;color:#444;font-size:12px;margin:4px 0 14px}
+   table{border-collapse:collapse;width:100%;font-size:12px;margin-top:8px}th,td{border:1px solid #999;padding:4px 6px;text-align:left}th{background:#eee}
+   .kpi{font-size:12px;margin:4px 0}.ass{display:flex;gap:50px;margin-top:70px}.ass div{flex:1;border-top:1px solid #000;padding-top:4px;font-size:12px;text-align:center}</style></head>
+   <body onload="window.print()">
+   <h1>Produção Diária de Algodão</h1>
+   <div class="sub">Safra ${escapeHtml(state.config.safra||"")} · Turno ${turno} · ${fmtDateBR(data)}</div>
+   <div class="kpi"><b>Produção total:</b> ${fmtNum(g.prod)} fardos &nbsp;&nbsp; <b>Meta do dia:</b> ${fmtNum(Math.round(g.meta))} &nbsp;&nbsp; <b>Horas:</b> ${fmtHoras(g.horas)} &nbsp;&nbsp; <b>Status:</b> ${escapeHtml(st.text)}</div>
+   <table><thead><tr><th>Início</th><th>Fim</th><th>Horas</th><th>Fardo iní.</th><th>Fardo fin.</th><th>Meta</th><th>Realiz.</th><th>Ocorrência</th></tr></thead><tbody>${linhas}<tr style="font-weight:bold;background:#f3f3f3"><td>TOTAL</td><td></td><td>${fmtHoras(g.horas)}</td><td></td><td></td><td>${fmtNum(Math.round(g.meta))}</td><td>${fmtNum(g.prod)}</td><td></td></tr></tbody></table>
+   <h3 style="font-size:13px;margin-top:18px">Prestadores presentes</h3>
+   <table><thead><tr><th>Colaborador</th><th>Horas</th><th>Fardos atribuídos</th></tr></thead><tbody>${presLin}</tbody></table>
+   <div class="ass"><div>Gestor da Produção</div><div>Gestor Administrativo</div></div>
+   <div style="margin-top:10px;font-size:12px">Data: ___/___/______</div>
+   </body></html>`;
+  const w = window.open("", "_blank");
+  if(!w){ toast("Pop-up bloqueado — habilite pop-ups para imprimir o relatório."); return; }
+  w.document.write(html); w.document.close();
+}
+
+// INICIAR O DIA — libera a edição daquele turno/dia (pede senha no servidor).
+async function iniciarDia(turno){
+  const data = diaTrabalho(turno);
+  if(!data){ toast("Escolha o dia."); return; }
+  if(!ONLINE){ // modo local
+    diaAutorizado = data;
+    const k = chaveDia(turno, data);
+    if(!state.iniciados) state.iniciados = [];
+    if(!state.iniciados.includes(k)) state.iniciados.push(k);
+    save(); renderLanc(turno); toast(`Dia ${fmtDateBR(data)} iniciado (modo local).`); abrirChamadaInicio(turno, data); return;
+  }
+  if(isConcluido(turno, data)){ toast("Este dia já foi concluído (travado)."); return; }
+  const senha = await pedirSenha(`Senha para INICIAR o dia ${fmtDateBR(data)} — Turno ${turno}`);
+  if(!senha) return;
+  try{
+    if(podeAutoUpload()) await flushSync();      // sobe pendências antes de importar do servidor
+    const r = await api("iniciarDia", senha, turno, data);
+    diaAutorizado = data;                         // autoriza a edição nesta sessão (esconde o botão Iniciar)
+    adotarEstado(r.estado);                       // importa o estado mais recente da nuvem
+    await refreshTsCarregado(); mostrarBotaoImportar(false);
+    toast(`Dia ${fmtDateBR(data)} (Turno ${turno}) iniciado. Edição liberada.`);
+    abrirChamadaInicio(turno, data);   // rodada 12: chamada de início (presença) do turno
+  }catch(err){ toast("Não foi possível iniciar: " + errMsg(err)); }
+}
+
+// CONCLUIR O DIA — online valida senha e trava no servidor; offline usa a fila local.
+async function concluirDia(turno){
+  const data = diaTrabalho(turno);
+  if(!data){ toast("Escolha o dia."); return; }
+  const g = computeDaySummary(turno, data);
+  if(g.linhas===0){ toast("Não há lançamentos neste dia para concluir."); return; }
+  // F2: não deixa concluir com produção fora do normal em alguma linha do dia
+  const invalida = rowsOf(turno).some(l => l.data===data && !isEmptyRow(l) && motivoRealizadoInvalido(l));
+  if(invalida){ toast("⚠ Há linha(s) com produção fora do normal (negativa ou mais de "+FATOR_OUTLIER+"x a meta). Corrija antes de concluir o dia.", 5000); return; }
+  // Item 9: não deixa concluir com baixa produção sem motivo (ou "Outros" sem texto)
+  const faltaMotivo = rowsOf(turno).some(l => l.data===data && !isEmptyRow(l) && motivoObrigatorioPendente(l));
+  if(faltaMotivo){ toast("⚠ Há hora(s) com baixa produção sem motivo (ou “Outros” sem texto). Informe antes de concluir.", 5000); return; }
+
+  // rodada 12 — CHAMADA DE FIM (reconciliação obrigatória) antes de concluir/gerar o PDF.
+  const fim = await abrirChamadaFim(turno, data);
+  if(fim === null) return;   // cancelou a chamada de fim -> não conclui
+
+  if(!ONLINE){ concluirDiaLocal(turno); return; }
+  const senha = await pedirSenha(`Senha para CONCLUIR o dia ${fmtDateBR(data)} — Turno ${turno}`);
+  if(!senha) return;
+  try{
+    toast("Concluindo o dia e gerando o PDF...", 4000);
+    // 2) garante lançamentos + presença na nuvem. Aborta em QUALQUER falha de envio
+    //    (sem internet, conflito de versão F9, sessão expirada) — não concluir sobre estado divergente.
+    const flushOk = await flushSync();
+    if(!flushOk){
+      toast("⚠ Dia NÃO concluído: " + (sessaoExpirada ? "sua sessão expirou — faça login de novo"
+            : !conexaoOk ? "sem conexão com a nuvem — tente quando a internet voltar"
+            : "há um envio mais novo na nuvem — clique em “⤓ Importar último envio” (no topo) e tente de novo") + ".", 6500);
+      return;
+    }
+    // 3) gera o PDF no front
+    let pdf = null;
+    try{ pdf = await gerarPdfDia(turno, data, g); }catch(e){ console.warn("Falha ao gerar PDF:", e); }
+    // 4) sobe o PDF ao Drive ANTES de concluir/imprimir
+    let pdfNoDrive = false, aviso = "";
+    if(pdf && pdf.base64){
+      try{ await api("salvarPDF", SESSAO.token, turno, data, pdf.base64, pdf.nome); pdfNoDrive = true; }
+      catch(err){
+        if(err && err.rede){ toast("⚠ Dia NÃO concluído: sem conexão para enviar o PDF ao Drive. Tente de novo quando reconectar.", 5500); return; }
+        aviso = "o PDF não foi salvo na nuvem (o servidor pode precisar de redeploy) — use Imprimir para o relatório local";
+      }
+    } else {
+      aviso = "não foi possível gerar o PDF (gerador indisponível offline) — use Imprimir para o relatório local";
+    }
+    // 5) conclui o dia na nuvem (trava + snapshot)
+    const r = await api("concluirDia", senha, turno, data);
+    diaAutorizado = null;                    // dia fechado: o próximo exige "Iniciar o dia" de novo
+    adotarEstado(r.estado);
+    ultimoEnvioOk = Date.now(); alteracoesPendentes = false; clearPend(); atualizarStatusSync();
+    await refreshTsCarregado(); mostrarBotaoImportar(false);
+    // 6) habilita a impressão (PDF gerado ou fallback HTML)
+    prepararImpressao(turno, data, pdf, g);
+    // 7) toast de resultado
+    toast((pdfNoDrive ? `✓ Dia ${fmtDateBR(data)} (Turno ${turno}) concluído e ENVIADO à nuvem; PDF salvo no Drive. `
+                      : `✓ Dia ${fmtDateBR(data)} (Turno ${turno}) concluído. `)
+          + (aviso ? "⚠ "+aviso+". " : "") + r.resumo.status, 6500);
+  }catch(err){
+    if(err && err.rede) toast("⚠ Dia NÃO concluído: sem conexão com a nuvem. Tente de novo quando a internet voltar.", 5500);
+    else toast("Não foi possível concluir: " + errMsg(err), 5000);
+  }
+}
+
+function concluirDiaLocal(turno){
+  const inp = document.getElementById(turno==="A"?"diaA":"diaB");
+  const data = inp.value;
+  if(!data){ toast("Escolha o dia a concluir."); return; }
+  const g = computeDaySummary(turno, data);
+  if(g.linhas===0){ toast("Não há lançamentos neste dia para concluir."); return; }
+  const jaConcl = isConcluido(turno, data);
+  const msg = `Concluir o dia ${fmtDateBR(data)} — Turno ${turno}?\n\n`+
+    `Produção: ${fmtNum(g.prod)} fardos\nMeta: ${fmtNum(Math.round(g.meta))}\nStatus: ${g.status.text}`+
+    (jaConcl ? "\n\n(Este dia já foi concluído antes — será atualizado na fila.)" : "");
+  if(!confirm(msg)) return;
+
+  const payload = {
+    app:"quadro-producao-2026", versao:1,
+    turno, data,
+    metaPorHora: state.config.metaPorHora,
+    horasProd: Math.round(g.horas*100)/100,
+    meta: Math.round(g.meta), metaInt: Math.floor(g.meta),
+    producao: g.prod,
+    status: g.status.text,
+    ocorrencias: g.ocor,
+    linhas: g.detalhes,
+    concluidoEm: new Date().toISOString(),
+    enviado: false
+  };
+  state.outbox = state.outbox.filter(p => !(p.turno===turno && p.data===data)); // substitui dia/turno
+  state.outbox.push(payload);
+  if(!jaConcl) state.concluidos.push(chaveDia(turno, data));
+  save();
+  enviarParaNuvem(payload);
+  renderLanc(turno); renderResumo("A"); renderResumo("B"); renderConfig();
+  atualizarBarraPend();
+  prepararImpressao(turno, data, null, g);   // offline: sem PDF no Drive, mas libera o relatório local (Imprimir)
+  toast(`Dia ${fmtDateBR(data)} (Turno ${turno}) concluído NESTE APARELHO. ⚠ AINDA NÃO está na nuvem (sem internet) — será enviado quando a conexão voltar e você logar.`, 6000);
+}
+
+// Ponto único de integração futura com a nuvem. Por ora o dado fica salvo na fila (outbox).
+function enviarParaNuvem(payload){
+  // TODO: enviar para o endpoint da nuvem (a definir). Ex.: fetch(URL, {method:"POST", body:JSON.stringify(payload)})
+  console.log("[nuvem] dia pronto para envio:", payload);
+}
+
+function exportarOutbox(){
+  if(state.outbox.length===0){ toast("A fila está vazia."); return; }
+  const blob = new Blob([JSON.stringify(state.outbox,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `fila-nuvem_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+function limparOutbox(){
+  if(state.outbox.length===0){ toast("A fila já está vazia."); return; }
+  if(!confirm(`Limpar a fila de envio (${state.outbox.length} dia(s))? Os dias continuam marcados como concluídos, só saem da fila.`)) return;
+  state.outbox=[]; save(); renderConfig(); toast("Fila de envio limpa.");
+}
+
+/* ============================================================
+   F3 - SAFRA: arquivar histórico (CSV/TXT/backup) e iniciar nova safra
+   ============================================================ */
+function baixarArquivo(nome, conteudo, tipo){
+  const blob = new Blob([conteudo], {type:tipo});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = nome; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+// CSV para Excel (pt-BR): separador ";" e BOM para acentos abrirem certo.
+function montarCSV(){
+  const sep = ";";
+  const safra = state.config.safra || "";
+  const head = ["Safra","Turno","Data (dia produção)","Data real","Hora Início","Hora Fim","Horas","Fardo Início","Fardo Final","Meta","Realizado","Ocorrência"];
+  const linhas = [head.join(sep)];
+  const rows = state.lancamentos.filter(l => !isEmptyRow(l))
+    .slice().sort((a,b)=> ((a.data||"")+a.turno+(a.horaInicio||"")) < ((b.data||"")+b.turno+(b.horaInicio||"")) ? -1 : 1);
+  for(const l of rows){
+    const horas = calcHoras(l.horaInicio, l.horaFim);
+    const meta  = metaDaLinha(l);   // item 7: meta vigente
+    const real  = calcRealizado(l.fardoInicio, l.fardoFinal);
+    const c = [
+      safra, l.turno, l.data||"", dataRealDe(l)||"", l.horaInicio||"", l.horaFim||"",
+      horas===null ? "" : String(Math.round(horas*100)/100).replace(".",","),
+      (l.fardoInicio===""||l.fardoInicio==null) ? "" : l.fardoInicio,
+      (l.fardoFinal===""||l.fardoFinal==null) ? "" : l.fardoFinal,
+      meta===null ? "" : String(Math.floor(meta)),
+      real===null ? "" : String(real),
+      ocorrenciaLabel(l).replace(/[;\r\n]/g," ")
+    ];
+    linhas.push(c.join(sep));
+  }
+  return "﻿" + linhas.join("\r\n");
+}
+// TXT legível (resumo por dia, por turno).
+function montarTXT(){
+  const L = [];
+  const safra = state.config.safra || "";
+  L.push("QUADRO DE PRODUÇÃO — ARQUIVO DA SAFRA " + safra);
+  L.push("Gerado em: " + new Date().toLocaleString("pt-BR"));
+  L.push("");
+  for(const turno of ["A","B"]){
+    const dados = buildResumo(turno);
+    L.push("==== TURNO " + turno + " ====");
+    L.push("Total de fardos: " + fmtNum(totalRealizado(turno)) + "  |  Dias com produção: " + dados.length);
+    for(const [data,g] of dados){
+      const st = statusInfo(g.prod, g.meta);
+      L.push("  " + fmtDateBR(data) + " — " + fmtNum(g.prod) + " fardos / meta " + fmtNum(Math.round(g.meta)) +
+             " — " + st.text + (isConcluido(turno,data) ? " [concluído]" : ""));
+      if(g.ocor.size) L.push("      Ocorrências: " + [...g.ocor].join("; "));
+    }
+    L.push("");
+  }
+  L.push("TOTAL GERAL (A+B): " + fmtNum(totalRealizado("A")+totalRealizado("B")) + " fardos");
+  return L.join("\r\n");
+}
+function exportarHistoricoSafra(){
+  const safra = (state.config.safra || "safra").replace(/[\\/]/g,"-");
+  const d = new Date().toISOString().slice(0,10);
+  baixarArquivo(`producao_${safra}_${d}.csv`, montarCSV(), "text/csv;charset=utf-8");
+  baixarArquivo(`producao_${safra}_${d}.txt`, montarTXT(), "text/plain;charset=utf-8");
+  baixarArquivo(`backup_${safra}_${d}.json`, JSON.stringify(state,null,2), "application/json");
+  toast("Histórico baixado: CSV (Excel), TXT e backup .json.", 4000);
+}
+async function iniciarNovaSafra(){
+  if(ONLINE && !ehADM()){ toast("Apenas ADM/Suporte podem iniciar nova safra."); return; }
+  if(!ONLINE){ toast("Conecte-se à internet para iniciar nova safra (precisa salvar o reinício na nuvem)."); return; }
+  // 1) puxa o estado mais recente da nuvem para arquivar TUDO
+  try{ const e = await api("carregarEstado", SESSAO.token); adotarEstado(e.estado); tsCarregado = e.ts || tsCarregado; }
+  catch(err){ toast("Não foi possível baixar o estado atual da nuvem: " + errMsg(err)); return; }
+  // 2) baixa os arquivos de arquivamento
+  exportarHistoricoSafra();
+  // 3) confirma o reinício
+  const nova = prompt("Arquivos baixados (CSV + TXT + backup).\n\nDigite o NOME da nova safra (ex.: 2026/27).\nIsto vai ZERAR os lançamentos e o contador de fardos. Mantém meta e categorias.", "");
+  if(nova===null) return;
+  if(!confirm("CONFIRMA iniciar a nova safra \"" + nova + "\"?\n\nOs lançamentos atuais serão removidos (você já baixou o histórico) e o contador de fardos volta a zero.")) return;
+  state.lancamentos = []; state.concluidos = []; state.iniciados = []; state.outbox = [];
+  if(nova.trim()) state.config.safra = nova.trim();
+  diaAutorizado = null; clearPend();
+  try{ localStorage.removeItem(SEQ_KEY); }catch(e){}   // rodada 12.1: zera as marcas d'água de exclusão
+  save();
+  await refreshTsCarregado();          // pega o ts atual antes de subir (evita falso conflito)
+  const ok = await uploadParaNuvem(false);
+  renderAll(); updateConfigInfos();
+  if(ok) toast("🌱 Nova safra \"" + (state.config.safra||"") + "\" iniciada. Contador zerado e salvo na nuvem.", 5000);
+  else toast("Safra reiniciada localmente, mas o envio à nuvem falhou — clique em “Sincronizar agora”.", 6000);
+}
+
+/* ---------- simulação ---------- */
+function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function isoMinus(days){ const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()-days); return d.toISOString().slice(0,10); }
+
+function gerarSimulacao(){
+  if(ONLINE && !ehADM()){ toast("Apenas ADM/Suporte podem gerar simulação."); return; }
+  if(state.lancamentos.some(l=>l.sim) &&
+     !confirm("Já existe uma simulação. Gerar de novo vai substituir os dados de simulação atuais. Continuar?")) return;
+  // remove simulação anterior e linhas vazias (serão recriadas)
+  state.lancamentos = state.lancamentos.filter(l => !l.sim && !isEmptyRow(l));
+
+  const cfgTurnos = { A:{inicio:8,janelas:9}, B:{inicio:19,janelas:9} }; // A 08→17, B 19→04 (cruza meia-noite)
+  let contador = 480000;   // contador ÚNICO e contínuo da prensa (A entrega para B, B para A...)
+  const cats = state.config.categorias;
+  const hhmm = h => String(((h%24)+24)%24).padStart(2,"0")+":00";
+
+  for(let d=6; d>=0; d--){
+    const data = isoMinus(d);
+    for(const turno of ["A","B"]){
+      const {inicio,janelas} = cfgTurnos[turno];
+      const paradas = new Set();
+      while(paradas.size < randInt(1,2)) paradas.add(randInt(0,janelas-1));
+      for(let j=0;j<janelas;j++){
+        let realizado, ocor="";
+        if(paradas.has(j)){ realizado = randInt(5,12); ocor = cats[randInt(0,cats.length-1)]; }
+        else { realizado = randInt(16,20); }   // ~18/h: tende ao real (média ~147/turno, alguns dias acima da meta)
+        const ini = contador, fim = ini + realizado;
+        contador = fim;
+        state.lancamentos.push({ id:uid(), turno, data, sim:true,
+          horaInicio:hhmm(inicio+j), horaFim:hhmm(inicio+j+1),
+          fardoInicio:String(ini), fardoFinal:String(fim), ocorrencia:ocor });
+      }
+    }
+  }
+  simularFuncionarios();   // item 11: popula funcionários de exemplo (local)
+  save(); renderAll();
+  toast("Simulação de 1 semana gerada (Turno A e B + funcionários de exemplo).");
+}
+function excluirSimulacao(){
+  if(ONLINE && !ehADM()){ toast("Apenas ADM/Suporte."); return; }
+  const n = state.lancamentos.filter(l=>l.sim).length;
+  if(n===0){ toast("Não há simulação para excluir."); return; }
+  if(!confirm(`Excluir ${n} linhas de simulação? Seus lançamentos reais não são afetados.`)) return;
+  state.lancamentos = state.lancamentos.filter(l => !l.sim);
+  // rodada 12: remove só colaboradores/presença marcados como SIMULAÇÃO (preserva dado real,
+  // inclusive a chamada de um dia já iniciado mas ainda sem lançamentos).
+  state.funcionarios = (state.funcionarios||[]).filter(c => !c.sim);
+  Object.keys(state.presenca||{}).forEach(k => { if(state.presenca[k] && state.presenca[k].sim) delete state.presenca[k]; });
+  save(); renderAll();
+  if(ONLINE) uploadParaNuvem(false);   // propaga a remoção da simulação ao mestre (ADM/Suporte)
+  toast("Simulação excluída.");
+}
+
+function updateConfigInfos(){
+  const sim = state.lancamentos.filter(l=>l.sim).length;
+  const si = document.getElementById("simInfo");
+  if(si) si.textContent = sim>0 ? `${sim} linhas de simulação ativas.` : "Nenhuma simulação no momento.";
+  const oi = document.getElementById("outboxInfo");
+  if(oi) oi.textContent = `${state.outbox.length} dia(s) na fila.`;
+  // tarja no topo: alerta quando há dados de simulação no modo online (uso real)
+  const badge = document.getElementById("simBadge");
+  if(badge) badge.style.display = (ONLINE && sim>0) ? "inline-block" : "none";
+}
+
+/* ---------- toast ---------- */
+let toastT=null;
+function toast(msg, ms=2800){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove("show"), ms);
+}
+
+/* ---------- modal de senha (mascarada) — usado em Iniciar / Concluir o dia ---------- */
+let _senhaResolve = null;
+function pedirSenha(titulo){
+  return new Promise(resolve=>{
+    _senhaResolve = resolve;
+    document.getElementById("senhaTitulo").textContent = titulo || "Senha";
+    const inp = document.getElementById("senhaInput");
+    inp.value = "";
+    document.getElementById("senhaModal").classList.remove("hidden");
+    setTimeout(()=>inp.focus(), 50);
+  });
+}
+function fecharSenha(valor){
+  document.getElementById("senhaModal").classList.add("hidden");
+  const r = _senhaResolve; _senhaResolve = null;
+  if(r) r(valor);
+}
+document.getElementById("senhaOk").addEventListener("click", ()=> fecharSenha(document.getElementById("senhaInput").value.trim() || null));
+document.getElementById("senhaCancelar").addEventListener("click", ()=> fecharSenha(null));
+document.getElementById("senhaInput").addEventListener("keydown", e=>{
+  if(e.key==="Enter"){ e.preventDefault(); fecharSenha(e.target.value.trim() || null); }
+  else if(e.key==="Escape"){ e.preventDefault(); fecharSenha(null); }
+});
+
+/* ---------- eventos: concluir / simulação / fila ---------- */
+document.getElementById("iniciarA").addEventListener("click", ()=>iniciarDia("A"));
+document.getElementById("iniciarB").addEventListener("click", ()=>iniciarDia("B"));
+document.getElementById("concluirA").addEventListener("click", ()=>concluirDia("A"));
+document.getElementById("concluirB").addEventListener("click", ()=>concluirDia("B"));
+document.getElementById("imprimirA").addEventListener("click", ()=>imprimirDia("A"));
+document.getElementById("imprimirB").addEventListener("click", ()=>imprimirDia("B"));
+document.getElementById("diaA").addEventListener("change", ()=>renderLanc("A"));
+document.getElementById("diaB").addEventListener("change", ()=>renderLanc("B"));
+document.getElementById("btnSimGerar").addEventListener("click", gerarSimulacao);
+document.getElementById("btnSimLimpar").addEventListener("click", excluirSimulacao);
+document.getElementById("btnOutboxExport").addEventListener("click", exportarOutbox);
+document.getElementById("btnOutboxLimpar").addEventListener("click", limparOutbox);
+document.getElementById("btnExportTudo").addEventListener("click", exportarHistoricoSafra);
+document.getElementById("btnNovaSafra").addEventListener("click", iniciarNovaSafra);
+
+/* ============================================================
+   LOGIN · PERMISSÕES · INICIALIZAÇÃO
+   ============================================================ */
+function aplicarPermissoesNaUI(){
+  const verTudo = !ONLINE || ehADM();   // offline e ADM/Suporte veem tudo
+  // abas: USUÁRIO só vê a do próprio turno
+  document.querySelectorAll("#tabs button").forEach(b=>{
+    const v = b.dataset.view;
+    let mostra = true;
+    if(ONLINE && !verTudo){ mostra = (v === (SESSAO.turno==="B" ? "prodB" : "prodA")); }
+    b.style.display = mostra ? "" : "none";
+  });
+  // "Limpar turno" (exclusão em massa) só ADM/Suporte
+  document.querySelectorAll("[data-clear]").forEach(b=> b.style.display = verTudo ? "" : "none");
+  // painel de simulação/fila: só ADM/Suporte (ou offline)
+  const sim = document.getElementById("btnSimGerar");
+  if(sim){ const p = sim.closest(".panel"); if(p) p.style.display = verTudo ? "" : "none"; }
+  // painel do Suporte (senhas)
+  const ps = document.getElementById("panelSuporte");
+  if(ps) ps.style.display = ehSuporte() ? "" : "none";
+  // painel de Safra (arquivar histórico + iniciar nova safra): ADM/Suporte (ou offline)
+  const psafra = document.getElementById("panelSafra");
+  if(psafra) psafra.style.display = verTudo ? "" : "none";
+  // campos de configuração
+  const cfgOk = podeConfig();
+  ["cfgMeta","cfgMetaAjuste","catNew","btnCatAdd"].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled = !cfgOk; });
+}
+
+function atualizarBadge(){
+  const box = document.getElementById("userbox");
+  if(!ONLINE){ box.style.display="none"; return; }
+  box.style.display = "";
+  document.getElementById("userNome").textContent = SESSAO.nome;
+  const pf = document.getElementById("userPerfil");
+  pf.textContent = SESSAO.perfil;
+  pf.className = "perfil " + SESSAO.perfil;
+  atualizarStatusSync();
+}
+
+function mostrarLogin(){ document.getElementById("login").classList.remove("hidden"); setTimeout(()=>document.getElementById("loginSenha").focus(),50); }
+function fecharLogin(){ document.getElementById("login").classList.add("hidden"); }
+function erroLogin(msg){ document.getElementById("loginErro").textContent = msg||""; }
+
+async function fazerLogin(senha, esperado){
+  if(!senha){ erroLogin("Digite a senha."); return; }
+  erroLogin("Entrando...");
+  try{
+    const r = await api("autenticar", senha);          // {ok,...} ou {ok:false, motivo}
+    if(!r.ok){ erroLogin(r.motivo || "Senha inválida."); return; }
+    if(esperado){
+      if(esperado.tipo && r.perfil!==esperado.tipo){ erroLogin("A senha não corresponde ao acesso selecionado."); return; }
+      if(esperado.tipo==="USUARIO" && esperado.turno && r.turno!==esperado.turno){ erroLogin(`Essa senha não é do Turno ${esperado.turno}.`); return; }
+    }
+    SESSAO = { token:r.token, perfil:r.perfil, nome:r.nome, turno:r.turno, permissoes:r.permissoes };
+    ONLINE = true;
+    sessaoExpirada = false;
+    diaAutorizado = null;                          // toda sessão começa exigindo "Iniciar o dia"
+    // USUÁRIO de inclusão: envia o que estiver pendente no cache ANTES de puxar (não perde lançamentos)
+    if(SESSAO.perfil === "USUARIO"){ try{ await api("salvarEstado", SESSAO.token, state); }catch(_e){} }
+    const e = await api("carregarEstado", SESSAO.token);
+    adotarEstado(e.estado);
+    tsCarregado = e.ts || 0;
+    mostrarBotaoImportar(false);
+    aplicarPermissoesNaUI();
+    atualizarBadge();
+    erroLogin(""); resetSelLogin();
+    fecharLogin();
+    showView(SESSAO.perfil==="USUARIO" ? (SESSAO.turno==="B"?"prodB":"prodA") : "prodA");
+    toast("Bem-vindo, " + SESSAO.nome + "!");
+  }catch(err){
+    erroLogin("Não foi possível conectar ao servidor. Verifique a internet/URL.");
+    document.getElementById("loginOffline").style.display = "";
+    console.warn("Erro de login/conexão:", err);
+  }
+}
+function entrarOffline(){
+  ONLINE = false;
+  SESSAO = { token:null, perfil:null, nome:null, turno:null, permissoes:{} };
+  diaAutorizado = null;
+  fecharLogin();
+  aplicarPermissoesNaUI(); atualizarBadge();
+  renderAll(); showView("prodA");
+  toast("Modo offline (teste local). Os dados ficam só neste navegador.");
+}
+function sair(){
+  SESSAO = { token:null, perfil:null, nome:null, turno:null, permissoes:{} };
+  ONLINE = false; diaAutorizado = null; atualizarBadge();
+  document.getElementById("loginSenha").value = ""; erroLogin("");
+  document.getElementById("loginOffline").style.display = "none";
+  if(typeof resetSelLogin==="function") resetSelLogin();
+  mostrarLogin();
+}
+
+/* seleção de acesso no login */
+let loginTipo = null, loginTurno = null;
+function setLoginSub(t){ const e=document.getElementById("loginSub"); if(e) e.textContent=t; }
+function resetSelLogin(){
+  loginTipo = null; loginTurno = null;
+  document.querySelectorAll(".tipo-btn,.turno-btn").forEach(x=>x.classList.remove("sel"));
+  document.getElementById("loginTurnos").style.display = "none";
+  setLoginSub("Selecione seu acesso e informe a senha.");
+}
+document.querySelectorAll(".tipo-btn").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    loginTipo = b.dataset.tipo; loginTurno = null;
+    document.querySelectorAll(".tipo-btn").forEach(x=>x.classList.toggle("sel", x===b));
+    document.querySelectorAll(".turno-btn").forEach(x=>x.classList.remove("sel"));
+    document.getElementById("loginTurnos").style.display = (loginTipo==="USUARIO") ? "flex" : "none";
+    setLoginSub("Selecione seu acesso e informe a senha.");
+    erroLogin(""); document.getElementById("loginSenha").focus();
+  });
+});
+document.querySelectorAll(".turno-btn").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    loginTurno = b.dataset.turno;
+    document.querySelectorAll(".turno-btn").forEach(x=>x.classList.toggle("sel", x===b));
+    document.getElementById("loginSenha").focus();
+  });
+});
+// Acesso SUPORTE (oculto): 1 clique no título do login arma o modo suporte, depois é só Entrar.
+function armarSuporte(){
+  loginTipo = "SUPORTE"; loginTurno = null;
+  document.querySelectorAll(".tipo-btn,.turno-btn").forEach(x=>x.classList.remove("sel"));
+  document.getElementById("loginTurnos").style.display = "none";
+  setLoginSub("Acesso Suporte — informe a senha e clique em Entrar.");
+  erroLogin(""); document.getElementById("loginSenha").focus();
+}
+document.getElementById("loginTitulo").addEventListener("click", armarSuporte);
+const _loginLogo = document.querySelector("#login .login-card .logo");
+if(_loginLogo) _loginLogo.addEventListener("click", armarSuporte);
+
+function tentarLogin(){
+  if(!loginTipo){ erroLogin("Selecione o tipo de acesso."); return; }
+  if(loginTipo==="USUARIO" && !loginTurno){ erroLogin("Selecione o Turno (A ou B)."); return; }
+  fazerLogin(document.getElementById("loginSenha").value.trim(), { tipo:loginTipo, turno:loginTurno });
+}
+document.getElementById("btnEntrar").addEventListener("click", tentarLogin);
+document.getElementById("loginSenha").addEventListener("keydown", e=>{ if(e.key==="Enter") tentarLogin(); });
+document.getElementById("linkOffline").addEventListener("click", entrarOffline);
+document.getElementById("btnSair").addEventListener("click", sair);
+
+// Botão "Sincronizar agora" (configurações) — upload manual (principal via p/ ADM/Suporte).
+document.getElementById("btnSincronizar").addEventListener("click", async ()=>{
+  if(!ONLINE){ toast("Disponível apenas no modo online."); return; }
+  await uploadParaNuvem(false);   // mostra o resultado
+});
+
+// Bloquear "inspecionar elemento" (apenas dissuasivo — copiar/colar continua liberado).
+document.addEventListener("contextmenu", e=> e.preventDefault());
+document.addEventListener("keydown", e=>{
+  const k = (e.key||"").toUpperCase();
+  if(k==="F12"){ e.preventDefault(); return; }
+  if((e.ctrlKey||e.metaKey) && e.shiftKey && (k==="I"||k==="J"||k==="C")){ e.preventDefault(); return; }
+  if((e.ctrlKey||e.metaKey) && k==="U"){ e.preventDefault(); return; }
+});
+
+// Ver lista de senhas (Suporte).
+document.getElementById("btnVerSenhas").addEventListener("click", async ()=>{
+  if(!ehSuporte()){ toast("Apenas o Suporte."); return; }
+  try{
+    const r = await api("listarSenhas", SESSAO.token);
+    document.getElementById("senhasList").innerHTML = r.usuarios.map(u=>
+      `<li><span><b>${escapeHtml(u.nome)}</b> [${u.perfil}${u.turno?(" "+u.turno):""}] — <code>${escapeHtml(u.senha)}</code></span></li>`
+    ).join("");
+  }catch(err){ toast("Falha: "+errMsg(err)); }
+});
+
+/* ============================================================
+   RODADA 12 — FUNCIONÁRIOS NA NUVEM (roster + chamada início/fim)
+   Roster e presença vivem em state.funcionarios / state.presenca e sobem
+   pela nuvem (salvarEstado / salvarFuncionarios). localStorage (STORE_KEY)
+   serve de cache offline. Cálculo por prestador SEM rateio (crédito por janela).
+   ============================================================ */
+const fid = () => "f_" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+function funcPodeEditarRoster(){ return !ONLINE || ehADM(); }   // ADM, SUPORTE ou modo local editam o cadastro
+function colabNome(c){ return ((c.nome||"") + " " + (c.sobrenome||"")).trim() || "(sem nome)"; }
+function colabAtivo(c, turno){ return turno==="A" ? c.ativoA!==false : c.ativoB!==false; }
+function temElegiveis(turno){ return (state.funcionarios||[]).some(c=>colabAtivo(c,turno)); }
+function getColab(id){ return (state.funcionarios||[]).find(x=>x.id===id) || null; }
+
+// Sobe a presença de uma chave "T|data" para a nuvem (rodada 12). Conta como pendência (F10) até confirmar.
+function subirPresenca(k){
+  addPend("pres:"+k);
+  if(podeAutoUpload()) tentarUploadComRetry();   // USUÁRIO sobe agora (com retry); ADM/Suporte sobem no "Sincronizar agora"
+  atualizarBarraPend();
+}
+// Persiste o roster (cadastro). ADM/Suporte online usam a rota dedicada; offline fica no cache.
+async function persistirRoster(){
+  save();
+  if(ONLINE && ehADM()){
+    try{
+      const r = await api("salvarFuncionarios", SESSAO.token, state.funcionarios);
+      if(r && r.estado && Array.isArray(r.estado.funcionarios)){ state.funcionarios = normalizarEstadoLocal(r.estado).funcionarios; gravarCacheAgora(); }
+      await refreshTsCarregado();   // salvarFuncionarios moveu o ULT_SALV -> evita falso CONFLITO_NUVEM (F9) no próximo "Sincronizar agora"
+      mostrarBotaoImportar(false);
+    }
+    catch(err){ toast("Cadastro salvo neste aparelho; falha ao enviar à nuvem: " + errMsg(err)); }
+  }
+  renderFunc();
+}
+
+/* ---------- CÁLCULO POR PRESTADOR (sem rateio: crédito pela janela em que a pessoa estava) ---------- */
+// Monta as janelas de uma chave "T|data" com início/fim contínuos (trata virada de meia-noite).
+function janelasDoDia(turno, data){
+  const js = [];
+  for(const l of state.lancamentos){
+    if(l.turno!==turno || l.data!==data) continue;
+    const h = calcHoras(l.horaInicio, l.horaFim);
+    const r = calcRealizado(l.fardoInicio, l.fardoFinal);
+    const rawIni = timeToMin(l.horaInicio);
+    if(h===null || r===null || rawIni===null) continue;
+    js.push({ rawIni, horas:h, real:r });
+  }
+  if(!js.length) return null;
+  // Âncora = início real do turno, robusto à ordem de digitação e à virada de meia-noite:
+  // o horário logo após o MAIOR intervalo no relógio (o "buraco" entre o fim do turno e o recomeço).
+  const anchor = ancoraTurno(js.map(j=>j.rawIni));
+  js.forEach(j=>{ let ci=j.rawIni; if(ci<anchor) ci+=1440; j.ini=ci; j.fim=ci + j.horas*60; });
+  const dayStart = Math.min.apply(null, js.map(j=>j.ini));
+  const dayEnd   = Math.max.apply(null, js.map(j=>j.fim));
+  return { janelas:js, anchor, dayStart, dayEnd };
+}
+// Início do turno a partir dos horários de início (em min): valor logo após o maior gap circular.
+// Ex.: turno A {08..16} -> 08:00; turno B {19..03 + 00..03} -> 19:00 (mesmo lançado fora de ordem).
+function ancoraTurno(inis){
+  const u = [...new Set(inis)].sort((a,b)=>a-b);
+  if(u.length<=1) return u[0]||0;
+  let maxGap=-1, start=u[0];
+  for(let i=0;i<u.length;i++){
+    const cur=u[i], next=(i+1<u.length)?u[i+1]:u[0]+1440;
+    if(next-cur>maxGap){ maxGap=next-cur; start=(i+1<u.length)?u[i+1]:u[0]; }
+  }
+  return start;
+}
+// Ancora um horário HH:MM ao turno (virada de meia-noite).
+function ancorarHora(t, anchor){ let r=timeToMin(t); if(r===null) return null; if(r<anchor) r+=1440; return r; }
+// Crédito por prestador numa chave: [{id,nome,horas,fardos}]. Produção CHEIA da janela (não divide).
+function calcPrestadoresDoDia(turno, data){
+  const g = janelasDoDia(turno, data); if(!g) return [];
+  const p = state.presenca[turno+"|"+data] || {};
+  const creditados = presCreditados(p);
+  const ajustes = (p.ajustes && typeof p.ajustes==="object" && !Array.isArray(p.ajustes)) ? p.ajustes : {};
+  const out = [];
+  creditados.forEach(id=>{
+    const aj = ajustes[id] || {};
+    const eRaw = (aj.entrada!=null && aj.entrada!=="") ? ancorarHora(aj.entrada, g.anchor) : null;
+    const sRaw = (aj.saida  !=null && aj.saida  !=="") ? ancorarHora(aj.saida,   g.anchor) : null;
+    const entrada = eRaw!=null ? eRaw : g.dayStart;
+    const saida   = sRaw!=null ? sRaw : g.dayEnd;
+    let horas=0, fardos=0;
+    g.janelas.forEach(j=>{ if(j.ini>=entrada && j.ini<saida){ horas+=j.horas; fardos+=j.real; } });
+    const c = getColab(id);
+    out.push({ id, nome: c?colabNome(c):"(removido)", horas, fardos });
+  });
+  out.sort((a,b)=> b.horas - a.horas);
+  return out;
+}
+// Agregado da safra por prestador (para a aba Funcionários).
+function calcFunc(){
+  const porId = {};
+  (state.funcionarios||[]).forEach(c=>{ porId[c.id] = { dias:new Set(), fardos:0, horas:0 }; });
+  let totalGeral = 0;
+  const chaves = new Set();
+  state.lancamentos.forEach(l=>{ if(l.data) chaves.add(l.turno+"|"+l.data); });
+  chaves.forEach(k=>{
+    const parts = k.split("|");
+    const g = janelasDoDia(parts[0], parts[1]); if(!g) return;
+    g.janelas.forEach(j=> totalGeral += j.real);
+    calcPrestadoresDoDia(parts[0], parts[1]).forEach(pr=>{
+      if(!porId[pr.id]) porId[pr.id] = { dias:new Set(), fardos:0, horas:0 };   // presença de quem saiu do roster
+      if(pr.horas>0 || pr.fardos>0){ porId[pr.id].dias.add(k); porId[pr.id].horas += pr.horas; porId[pr.id].fardos += pr.fardos; }
+    });
+  });
+  return { porId, totalGeral };
+}
+
+/* ---------- render da aba Funcionários ---------- */
+function renderRoster(){
+  const tbl = document.getElementById("rosterTbl"); if(!tbl) return;
+  const editar = funcPodeEditarRoster();
+  const ros = state.funcionarios||[];
+  let html = `<thead><tr><th>Colaborador</th><th>Turno A</th><th>Turno B</th><th></th></tr></thead><tbody>`;
+  if(!ros.length){ html += `<tr><td colspan="4" class="empty">Nenhum colaborador cadastrado.</td></tr>`; }
+  else ros.forEach(c=>{
+    const dis = editar ? "" : " disabled";
+    html += `<tr>
+      <td>${escapeHtml(colabNome(c))}${c.sim?' <span class="badge-sim">sim</span>':''}</td>
+      <td><input type="checkbox" aria-label="Habilitado no Turno A" data-rid="${c.id}" data-rturno="A"${colabAtivo(c,"A")?" checked":""}${dis}></td>
+      <td><input type="checkbox" aria-label="Habilitado no Turno B" data-rid="${c.id}" data-rturno="B"${colabAtivo(c,"B")?" checked":""}${dis}></td>
+      <td class="col-acao">${editar?`<button class="btn-del" data-rdel="${c.id}" title="Remover" aria-label="Remover colaborador">✕</button>`:""}</td>
+    </tr>`;
+  });
+  tbl.innerHTML = html + `</tbody>`;
+}
+function renderFuncCalc(){
+  const tbl = document.getElementById("funcCalcTbl"); if(!tbl) return;
+  const { porId } = calcFunc();
+  const linhas = (state.funcionarios||[]).map(c=>({ c, d: porId[c.id] || {dias:new Set(),fardos:0,horas:0} }))
+    .filter(x=> x.d.fardos>0 || x.d.horas>0 || x.d.dias.size>0)
+    .sort((a,b)=> b.d.horas - a.d.horas);
+  let html = `<thead><tr><th>Colaborador</th><th>Dias</th><th>Horas</th><th>Fardos atribuídos</th><th>Fardos/h</th></tr></thead><tbody>`;
+  if(!linhas.length){ html += `<tr><td colspan="5" class="empty">Sem presença/produção registrada ainda.</td></tr>`; }
+  else linhas.forEach(({c,d})=>{
+    const fh = d.horas>0 ? d.fardos/d.horas : 0;
+    html += `<tr><td>${escapeHtml(colabNome(c))}</td><td>${d.dias.size}</td><td>${fmtHoras(d.horas)}</td><td>${fmtNum(Math.round(d.fardos))}</td><td>${fmtNum(Math.round(fh*10)/10)}</td></tr>`;
+  });
+  tbl.innerHTML = html + `</tbody>`;
+}
+function renderFunc(){
+  const addForm = document.getElementById("funcAddForm");
+  if(addForm) addForm.style.display = funcPodeEditarRoster() ? "" : "none";
+  renderRoster(); renderFuncCalc();
+}
+
+/* ---------- CHAMADAS (roll-call) ---------- */
+let _chamadaCtx = null;   // { fase:"inicio"|"fim", turno, data, inicioSet?, resolve? }
+
+// CHAMADA DE INÍCIO — no "Iniciar o dia". Não abre se não houver colaborador habilitado no turno.
+function abrirChamadaInicio(turno, data){
+  if(!temElegiveis(turno)) return;
+  const k = turno+"|"+data;
+  const p = state.presenca[k] || { inicio:[], fim:[], ajustes:{} };
+  const jaInicio = new Set(p.inicio||[]);
+  _chamadaCtx = { fase:"inicio", turno, data };
+  document.getElementById("funcModalTitulo").textContent = `Chamada de início — Turno ${turno} · ${fmtDateBR(data)}`;
+  document.getElementById("funcModalSub").textContent = "Marque quem está presente no início do turno.";
+  const elegiveis = (state.funcionarios||[]).filter(c=>colabAtivo(c,turno));
+  document.getElementById("funcModalLista").innerHTML = elegiveis.map(c=>
+    `<label class="chamada-item"><input type="checkbox" data-pid="${c.id}"${jaInicio.has(c.id)?" checked":""}><span>${escapeHtml(colabNome(c))}</span></label>`
+  ).join("");
+  document.getElementById("funcModalAdd").style.display = funcPodeEditarRoster() ? "" : "none";
+  document.getElementById("funcModalPular").textContent = "Pular";
+  document.getElementById("funcModalSalvar").textContent = "Salvar chamada";
+  document.getElementById("funcModal").classList.remove("hidden");
+}
+
+// CHAMADA DE FIM — no "Concluir o dia", ANTES do PDF. Promise: resolve {ok}/{skip} ou null (cancelado).
+function abrirChamadaFim(turno, data){
+  return new Promise(resolve=>{
+    const k = turno+"|"+data;
+    const p = state.presenca[k] || { inicio:[], fim:[], ajustes:{} };
+    if(!temElegiveis(turno) && !(p.inicio||[]).length){ resolve({ skip:true }); return; }   // nada a reconciliar
+    const inicioVazio = !(p.inicio && p.inicio.length);   // início pulado -> sem reconciliação (turno cheio)
+    const inicioSet = new Set(p.inicio||[]);
+    const fimSet = (p.fim && p.fim.length) ? new Set(p.fim) : new Set(p.inicio||[]);   // default: quem começou continua
+    const aj = (p.ajustes && typeof p.ajustes==="object" && !Array.isArray(p.ajustes)) ? p.ajustes : {};
+    _chamadaCtx = { fase:"fim", turno, data, inicioSet, inicioVazio, ajustes:aj, resolve };
+    // lista = habilitados no turno ∪ quem estava no início (mesmo que tenha saído do roster)
+    const ids = [];
+    (state.funcionarios||[]).forEach(c=>{ if(colabAtivo(c,turno) || inicioSet.has(c.id)) ids.push(c.id); });
+    (p.inicio||[]).forEach(id=>{ if(ids.indexOf(id)<0) ids.push(id); });
+    document.getElementById("funcModalTitulo").textContent = `Chamada de fim — Turno ${turno} · ${fmtDateBR(data)}`;
+    document.getElementById("funcModalSub").textContent = "Confirme quem está no fim do turno. Quem saiu antes ou entrou depois, informe o horário.";
+    document.getElementById("funcModalLista").innerHTML = ids.map(id=>{
+      const c = getColab(id); const nome = c?colabNome(c):"(removido)";
+      const noInicio = inicioSet.has(id), noFim = fimSet.has(id);
+      const ajv = aj[id]||{};
+      return `<div class="chamada-row" data-row="${id}">
+        <label class="chamada-item"><input type="checkbox" data-fid="${id}"${noFim?" checked":""}><span>${escapeHtml(nome)}</span>
+          <em class="chamada-tag">${noInicio?"estava no início":"não estava no início"}</em></label>
+        <div class="chamada-hora" data-hora="${id}" style="display:none">
+          <label class="chamada-hlbl"></label>
+          <input type="time" data-hid="${id}" data-htipo="" aria-label="Horário" value="${escapeHtml(ajv.saida||ajv.entrada||"")}">
+        </div>
+      </div>`;
+    }).join("");
+    document.getElementById("funcModalAdd").style.display = funcPodeEditarRoster() ? "" : "none";
+    document.getElementById("funcModalPular").textContent = "Cancelar";
+    document.getElementById("funcModalSalvar").textContent = "Salvar e continuar";
+    atualizarLinhasFim();
+    document.getElementById("funcModal").classList.remove("hidden");
+  });
+}
+// Mostra/oculta o campo de hora de cada linha do fim conforme início × presença no fim.
+function atualizarLinhasFim(){
+  const ctx = _chamadaCtx || {};
+  const inicioSet = ctx.inicioSet || new Set();
+  const ajustes = ctx.ajustes || {};
+  const inicioVazio = !!ctx.inicioVazio;
+  document.querySelectorAll("#funcModalLista .chamada-row").forEach(row=>{
+    const id = row.getAttribute("data-row");
+    const cb = row.querySelector("[data-fid]");
+    const box = row.querySelector("[data-hora]");
+    const inp = row.querySelector("[data-hid]");
+    const lbl = row.querySelector(".chamada-hlbl");
+    const noInicio = inicioSet.has(id), noFim = cb.checked;
+    let tipo = "";
+    if(!inicioVazio){                                 // sem início registrado -> ninguém exige horário (turno cheio)
+      if(noInicio && !noFim) tipo = "saida";          // estava no início e saiu antes
+      else if(!noInicio && noFim) tipo = "entrada";   // não estava no início e entrou depois
+    }
+    const prevTipo = inp.getAttribute("data-htipo") || "";
+    if(tipo !== prevTipo){
+      // tipo mudou -> mostra o ajuste da categoria certa (ou limpa); preserva o que já foi digitado p/ o mesmo tipo
+      const ajv = ajustes[id] || {};
+      inp.value = tipo==="saida" ? (ajv.saida||"") : tipo==="entrada" ? (ajv.entrada||"") : "";
+    }
+    inp.setAttribute("data-htipo", tipo);
+    if(tipo){ box.style.display = ""; lbl.textContent = tipo==="saida" ? "Saiu às:" : "Entrou às:"; }
+    else { box.style.display = "none"; }
+  });
+}
+function appendFimRow(id){
+  const c = getColab(id); const nome = c?colabNome(c):"(removido)";
+  const div = document.createElement("div");
+  div.className = "chamada-row"; div.setAttribute("data-row", id);
+  div.innerHTML = `<label class="chamada-item"><input type="checkbox" data-fid="${id}" checked><span>${escapeHtml(nome)}</span>
+      <em class="chamada-tag">não estava no início</em></label>
+    <div class="chamada-hora" data-hora="${id}" style="display:none"><label class="chamada-hlbl"></label>
+      <input type="time" data-hid="${id}" data-htipo="" aria-label="Horário" value=""></div>`;
+  document.getElementById("funcModalLista").appendChild(div);
+}
+
+function fecharChamada(){
+  document.getElementById("funcModal").classList.add("hidden");
+  const ctx = _chamadaCtx; _chamadaCtx = null;
+  if(ctx && ctx.fase==="fim" && ctx.resolve) ctx.resolve(null);   // cancelou a chamada de fim -> conclusão aborta
+}
+function salvarChamada(){
+  const ctx = _chamadaCtx; if(!ctx){ fecharChamada(); return; }
+  const k = ctx.turno+"|"+ctx.data;
+  const p = state.presenca[k] || { inicio:[], fim:[], ajustes:{} };
+
+  if(ctx.fase==="inicio"){
+    p.inicio = [...document.querySelectorAll('#funcModalLista [data-pid]:checked')].map(cb=>cb.getAttribute("data-pid"));
+    state.presenca[k] = p;
+    save(); subirPresenca(k); renderFunc();
+    fecharChamada();
+    toast(`Chamada de início salva: ${p.inicio.length} presente(s).`);
+    return;
+  }
+
+  // FASE FIM: valida horários obrigatórios e monta fim + ajustes.
+  const fim = [], ajustes = {};
+  let faltando = null;
+  const rows = [...document.querySelectorAll('#funcModalLista .chamada-row')];
+  for(const row of rows){
+    const id = row.getAttribute("data-row");
+    const cb = row.querySelector("[data-fid]");
+    const inp = row.querySelector("[data-hid]");
+    const tipo = inp.getAttribute("data-htipo");
+    const val = (inp.value||"").trim();
+    const c = getColab(id); const nome = c?colabNome(c):"(removido)";
+    if(cb.checked) fim.push(id);
+    if(tipo==="saida"){ if(!val){ faltando = "Informe o horário de SAÍDA de " + nome + "."; break; } ajustes[id] = { saida:val }; }
+    else if(tipo==="entrada"){ if(!val){ faltando = "Informe o horário de ENTRADA de " + nome + "."; break; } ajustes[id] = { entrada:val }; }
+  }
+  if(faltando){ toast("⚠ " + faltando, 4800); return; }   // bloqueia: não fecha o modal
+
+  p.fim = fim; p.ajustes = ajustes;
+  if(!(p.inicio && p.inicio.length)) p.inicio = fim.slice();   // sem início registrado -> turno cheio
+  state.presenca[k] = p;
+  // NÃO dispara upload aqui: o flushSync do concluirDia sobe a presença junto (evita corrida com o upload).
+  save(); addPend("pres:"+k); atualizarBarraPend(); renderFunc();
+  const resolve = ctx.resolve; ctx.resolve = null;   // evita resolve duplo no fecharChamada
+  fecharChamada();
+  if(resolve) resolve({ ok:true, presenca:p });
+}
+function addColabModal(){
+  if(!funcPodeEditarRoster()){ toast("Apenas ADM/Suporte cadastram colaboradores. Peça ao ADM."); return; }
+  const n=document.getElementById("funcModalNome"), s=document.getElementById("funcModalSobrenome");
+  const nome=(n.value||"").trim(); if(!nome){ n.focus(); return; }
+  const c = { id:fid(), nome, sobrenome:(s.value||"").trim(), ativoA:true, ativoB:true };
+  if(!Array.isArray(state.funcionarios)) state.funcionarios = [];
+  state.funcionarios.push(c);
+  persistirRoster();
+  n.value=""; s.value=""; n.focus();
+  const ctx = _chamadaCtx; if(!ctx) return;
+  if(ctx.fase==="inicio"){
+    abrirChamadaInicio(ctx.turno, ctx.data);
+    const cb = document.querySelector(`#funcModalLista [data-pid="${c.id}"]`); if(cb) cb.checked = true;
+  } else {
+    appendFimRow(c.id); atualizarLinhasFim();
+  }
+}
+
+// Simulação de funcionários — agora popula state.funcionarios / state.presenca (formato novo).
+function simularFuncionarios(){
+  if(!Array.isArray(state.funcionarios) || !state.funcionarios.length){
+    const ex = [["João","Silva"],["Pedro","Souza"],["Maria","Lima"],["Ana","Costa"],["Carlos","Rocha"],["José","Alves"]];
+    state.funcionarios = ex.map(([n,s])=>({ id:fid(), nome:n, sobrenome:s, ativoA:true, ativoB:true, sim:true }));
+  }
+  if(!state.presenca || typeof state.presenca!=="object") state.presenca = {};
+  const ids = state.funcionarios.map(c=>c.id);
+  const chaves = new Set();
+  state.lancamentos.forEach(l=>{ if(l.sim && l.data) chaves.add(l.turno+"|"+l.data); });
+  chaves.forEach(k=>{
+    const n = randInt(3, Math.min(5, ids.length));
+    const presentes = ids.slice().sort(()=>Math.random()-0.5).slice(0,n);
+    state.presenca[k] = { inicio:presentes, fim:presentes.slice(), ajustes:{}, sim:true };   // marca p/ excluirSimulacao
+  });
+  // quem chamou (gerarSimulacao) faz save()+renderAll()
+}
+
+/* eventos da aba Funcionários */
+document.getElementById("btnFuncAdd").addEventListener("click", ()=>{
+  if(!funcPodeEditarRoster()){ toast("Apenas ADM/Suporte cadastram colaboradores."); return; }
+  const n=document.getElementById("funcNome"), s=document.getElementById("funcSobrenome");
+  const nome=(n.value||"").trim(); if(!nome){ n.focus(); return; }
+  if(!Array.isArray(state.funcionarios)) state.funcionarios = [];
+  state.funcionarios.push({ id:fid(), nome, sobrenome:(s.value||"").trim(), ativoA:true, ativoB:true });
+  persistirRoster(); n.value=""; s.value="";
+});
+document.getElementById("rosterTbl").addEventListener("change", e=>{
+  const cb = e.target.closest("[data-rid]"); if(!cb) return;
+  if(!funcPodeEditarRoster()){ renderRoster(); return; }
+  const c = getColab(cb.getAttribute("data-rid")); if(!c) return;
+  if(cb.getAttribute("data-rturno")==="A") c.ativoA = cb.checked; else c.ativoB = cb.checked;
+  persistirRoster();
+});
+document.getElementById("rosterTbl").addEventListener("click", e=>{
+  const del = e.target.closest("[data-rdel]"); if(!del) return;
+  if(!funcPodeEditarRoster()){ toast("Apenas ADM/Suporte."); return; }
+  const id = del.getAttribute("data-rdel");
+  if(!confirm("Remover este colaborador? (a presença já registrada nos dias é mantida)")) return;
+  state.funcionarios = (state.funcionarios||[]).filter(x=>x.id!==id);
+  persistirRoster();
+});
+document.getElementById("funcModalSalvar").addEventListener("click", salvarChamada);
+document.getElementById("funcModalPular").addEventListener("click", fecharChamada);
+document.getElementById("btnFuncModalAdd").addEventListener("click", addColabModal);
+document.getElementById("funcModalLista").addEventListener("change", e=>{
+  if(_chamadaCtx && _chamadaCtx.fase==="fim" && e.target.closest("[data-fid]")) atualizarLinhasFim();
+});
+
+/* ---------- init ---------- */
+marcarConexao(navigator.onLine);
+renderAll();
+showView("prodA");
+aplicarPermissoesNaUI();
+mostrarLogin();   // exige login antes de usar (online); botão "offline" aparece se não conectar
+</script>
+</body>
+</html>
